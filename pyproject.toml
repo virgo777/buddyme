@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "buddyme"
+version = "0.1.33"
+description = "多模型 AI 智能体框架，支持多模型切换、工具调用和技能系统"
+requires-python = ">=3.9"
+dependencies = [
+    "httpx",
+    "rich",
+    "python-dotenv",
+]
+
+[project.scripts]
+buddyme = "buddyMe.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["buddyMe*"]
+
+[tool.setuptools.package-data]
+buddyMe = [
+    "initspace/brain/*.md",
+    "initspace/memorys/*.json",
+    "initspace/memorys/*.md",
+    "skill_library/**/*",
+]

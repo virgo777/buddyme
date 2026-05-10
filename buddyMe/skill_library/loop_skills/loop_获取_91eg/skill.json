@@ -1,0 +1,33 @@
+{
+  "name": "loop_获取_91eg",
+  "description": "获取今日南京温度，和当前时间，追加写入C:\\Users\\xiaohua\\Desktop\\buddyMe\\wenanj.md",
+  "task_id": "loop_获取_91eg",
+  "created": "2026-05-08T10:11:56.129373",
+  "steps": [
+    {
+      "tool": "baidu_search",
+      "args": {
+        "query": "南京今日天气温度"
+      }
+    },
+    {
+      "tool": "read_file",
+      "args": {
+        "path": "C:\\Users\\xiaohua\\Desktop\\buddyMe\\wenanj.md"
+      }
+    },
+    {
+      "tool": "baidu_search",
+      "args": {
+        "query": "南京天气 2026年5月8日"
+      }
+    },
+    {
+      "tool": "write_file",
+      "args": {
+        "path": "C:\\Users\\xiaohua\\Desktop\\buddyMe\\wenanj.md",
+        "content": "{{prev_content}}\n\n# 南京天气记录\n\n## {{current_time}}\n- **今日南京温度**：17°C ~ 22°C\n- **天气**：中雨转小雨\n- **空气质量**：36 优\n- **穿衣建议**：建议穿单层棉麻面料的短套装、T恤衫、薄牛仔衫裤、休闲服、职业套装等舒适的衣服。\n\n"
+      }
+    }
+  ]
+}

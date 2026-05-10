@@ -1,0 +1,20 @@
+{
+  "name": "markitdown-skill",
+  "version": "1.0.1",
+  "description": "OpenClaw agent skill - documentation and utilities for Microsoft's MarkItDown library",
+  "author": "Karman Verma",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/karmanverma/markitdown-skill.git"
+  },
+  "keywords": [
+    "openclaw",
+    "skill",
+    "markitdown",
+    "markdown",
+    "pdf",
+    "document",
+    "conversion"
+  ]
+}
