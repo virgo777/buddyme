@@ -93,8 +93,9 @@ QWEN_API_KEY=your_qwen_api_key
 ## 快速开始
 
 ### CLI 模式
-
+先导入脚本地址到环境，即把Scripts目录加到PATH：
 ```bash
+set PATH=%PATH%;C:\Users\yourname\AppData\Roaming\Python\Python313\Scripts
 buddyme
 ```
 
