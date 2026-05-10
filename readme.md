@@ -20,7 +20,7 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 
 > 欢迎访问 [BuddyMe Blog](http://49.235.53.176/) 阅读最新文章与技术分享。
 >
-> 5.10更新推荐阅读：[技术深度：buddyMe 框架任务拆解的 "盲拆" 问题与技能感知优化方案](http://49.235.53.176/blog/buddyme)
+> 5.10更新推荐阅读：[技术深度：buddyMe 框架任务拆解的 "盲拆" 问题与技能感知优化方案](http://49.235.53.176/blog/buddyme)<br>
 > 5.9更新推荐阅读：[ReAct、Plan-and-Execute 与 Reflection 的本质差异与落地指南](http://49.235.53.176/blog/react-plan-and-execute-reflection)
 
 ## 核心特性
