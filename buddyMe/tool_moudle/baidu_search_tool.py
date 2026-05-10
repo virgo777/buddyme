@@ -18,6 +18,7 @@ BaiduSearchTool - 百度搜索工具
 """
 
 import logging
+import os
 from typing import Any, Dict, Optional
 
 import httpx
@@ -27,7 +28,6 @@ from buddyMe.anthropic_standard.basic_anthropic_tool import BaseTool
 logger = logging.getLogger(__name__)
 
 QIANFAN_SEARCH_URL = "https://qianfan.baidubce.com/v2/ai_search/web_search"
-DEFAULT_API_KEY = "bce-v3/ALTAK-ip6S1CTcEfUja3dXSNnZA/d56eb130d1fda0af3ba428f3c6952e40c573bcee"
 
 
 class BaiduSearchTool(BaseTool):
@@ -59,7 +59,7 @@ class BaiduSearchTool(BaseTool):
                 "required": ["query"]
             }
         )
-        self._api_key = api_key or DEFAULT_API_KEY
+        self._api_key = api_key or os.environ.get("BAIDU_SEARCH_API_KEY", "")
 
     async def execute(self, query: str) -> str:
         """执行百度搜索
