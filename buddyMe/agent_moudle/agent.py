@@ -841,7 +841,11 @@ class AgentMain:
         enriched_input = user_input
         if conversation_context:
             enriched_input = f"{conversation_context}\n\n{'=' * 40}\n\n当前用户需求:\n{user_input}"
-        plans = await todo_manager.plan_task(enriched_input, client=self._client)
+        plans = await todo_manager.plan_task(
+            enriched_input,
+            client=self._client,
+            skill_metadata=self._skill_loader.get_metadata_prompt()
+        )
         render = self.todo_manager.create_from_plan(plans)
         num_subagent = len(self.todo_manager.items)
         logger.info(f"任务分解为:\n{render}")

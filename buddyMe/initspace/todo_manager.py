@@ -1,20 +1,30 @@
 
 
 
-async def plan_task(user_input: str, client) -> list:
+async def plan_task(user_input: str, client, skill_metadata: str = "") -> list:
     """
     单独调用一次 LLM，仅用于生成任务计划。
     返回步骤文本列表，如 ["创建项目结构", "编写入口文件", ...]
     client: GLMClient 实例
+    skill_metadata: 可用的技能元数据摘要（Level 1），用于引导任务分解参考已有技能
     """
-    plan_prompt = f"""分析以下用户需求，按文件操作粒度分解为执行步骤。
+    skill_section = ""
+    if skill_metadata:
+        skill_section = f"""
+可用技能参考（分解任务时优先对齐已有技能，能匹配到技能的步骤用 [SKILL:技能名] 标注）：
+{skill_metadata}
+"""
 
+    plan_prompt = f"""分析以下用户需求，按文件操作粒度分解为执行步骤。
+{skill_section}
 规则：
 - 每个步骤必须对应一个具体的操作类型，用标签标注：
   [SEARCH] 搜索/查找外部信息
   [CREATE] 创建新文件（骨架/初始版本）
   [EDIT] 编辑已有文件（填充内容、添加样式、添加交互）
   [VERIFY] 读取文件并验证完整性、修复问题
+  [SKILL:技能名] 该步骤可由指定技能完成（与其他标签可组合，如 [CREATE][SKILL:frontend-design]）
+- 如果某个步骤能匹配到上方「可用技能参考」中的技能，必须用 [SKILL:技能名] 标注
 - 代码生成类任务按"骨架→填充→验证"顺序拆分，每个步骤控制在合理输出长度内
 - 最多 8 个步骤，简单任务返回原句不分解
 - 步骤之间不要有内容重叠，每个步骤处理不同的子目标
@@ -32,14 +42,11 @@ async def plan_task(user_input: str, client) -> list:
 输出：
 今天天气怎么样
 
-用户需求：查找北京天气并制作博物馆导览HTML
+用户需求：设计一个响应式着陆页
 输出：
-[SEARCH] 搜索北京今日天气信息
-[SEARCH] 搜索北京主要博物馆信息并整理导览内容
-[CREATE] 创建 HTML 骨架文件，包含页面结构和布局
-[EDIT] 向 HTML 文件注入天气数据展示区域
-[EDIT] 向 HTML 文件添加 CSS 样式和导览内容
-[VERIFY] 读取最终 HTML 文件，检查完整性并修复问题
+[CREATE][SKILL:frontend-design] 使用前端设计技能创建响应式着陆页 HTML 骨架和样式
+[EDIT][SKILL:frontend-design] 添加交互动效和响应式适配
+[VERIFY] 读取最终文件，检查完整性和跨端兼容性
 
 现在请分解以下用户需求：
 {user_input}
