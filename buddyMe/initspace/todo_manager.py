@@ -1,4 +1,4 @@
-
+from typing import Dict, List, Optional
 
 
 async def plan_task(user_input: str, client, skill_metadata: str = "") -> list:
@@ -82,7 +82,6 @@ async def plan_task(user_input: str, client, skill_metadata: str = "") -> list:
 
     return steps if steps else [user_input]
 
-from typing import List, Dict, Optional
 
 class TodoManager:
     """智能体内部任务管理器 —— 对大语言模型不可见，不对外暴露为工具"""
