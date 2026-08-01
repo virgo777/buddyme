@@ -1,3 +1,10 @@
+"""大模型统一配置表。
+
+以 ModelConfig 类集中维护所有可用模型（智谱 GLM、DeepSeek、百度 ERNIE、
+小米、通义 Qwen 等）的 api_key / base_url / api_model / max_tokens 参数，
+并提供安全的读取、校验与运行时热更新方法。api_key 一律从环境变量读取。
+"""
+
 import os
 
 
