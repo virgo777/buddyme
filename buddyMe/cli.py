@@ -1,4 +1,9 @@
-"""buddyMe CLI 入口"""
+"""buddyMe 命令行交互入口。
+
+初始化 Agent、注册百度搜索工具、启动心跳，随后进入 query 交互循环；
+调用 LLM 时在后台线程运行 invoke()，主线程显示 Rich spinner 动画与 token 计数。
+支持 `python -m buddyMe` 或直接运行本模块启动。
+"""
 
 import os
 import queue
