@@ -1,4 +1,9 @@
-"""跨平台原子文件写入"""
+"""跨平台原子文件写入工具。
+
+提供 atomic_write()：先写入同目录临时文件 → fsync 落盘 → os.replace 原子替换，
+避免程序崩溃或并发写入导致文件损坏 / 丢数据。跨文件系统时自动回退到
+copy+remove，兼容 Windows 与 Linux。
+"""
 
 import os
 import shutil

@@ -1,4 +1,10 @@
-"""统一路径解析 — pathlib 实现，替代分散的 os.path 调用"""
+"""统一路径解析工具（基于 pathlib）。
+
+集中管理 buddyMe 运行时涉及的三类目录，替代各模块分散的 os.path 调用：
+- 源码包目录（只读模板）
+- 用户数据目录（默认 ~/.buddyme，可由 BUDDYME_HOME 覆盖）
+- 工作空间目录（文件输出，可由 BUDDYME_WORKSPACE 覆盖）
+"""
 
 import os
 from pathlib import Path
