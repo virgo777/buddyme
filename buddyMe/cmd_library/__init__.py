@@ -1,3 +1,5 @@
+# Command library package exports.
+
 """
 cmd_library — buddyMe 命令系统模块
 

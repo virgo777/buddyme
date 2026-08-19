@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Batch-convert documents to markdown.
 """
 Batch convert multiple files to markdown using MarkItDown
 """

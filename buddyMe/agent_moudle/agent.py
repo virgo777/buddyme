@@ -1,16 +1,6 @@
-"""
-agent.py — buddyMe 核心 Agent 实现（AgentMain 类）
+# Core agent runtime: task loop, tool/skill orchestration and LLM calls.
 
-AgentMain 是整个智能体的中枢，单文件聚合了 Agent 运行所需的全部能力：
-- 模型统一调用与运行时热切换（switch_model）；工具注册与 ReAct 工具调用循环
-- invoke() 主入口按简单 / 复杂任务分流；复杂任务分解为子任务并合并结果，
-  _compress_tool_results 压缩长工具输出以控制上下文长度
-- 技能系统（SkillLoader 发现 → invoke_skill 激活 → 按指令执行基础工具）
-- 动态 system prompt 构建（人格 + 工具 + 技能元数据）与多轮对话上下文摘要
-- 定时心跳：HeartbeatManager 调度 + LoopSkillManager 确定性重放（tick / start / stop）
-
-被 main.py（本地开发模式）与 cli.py（CLI 模式）实例化使用。
-"""
+"""Core agent runtime: task loop, tool/skill orchestration and LLM calls."""
 
 import asyncio
 import json

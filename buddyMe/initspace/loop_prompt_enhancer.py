@@ -1,3 +1,5 @@
+# Enhances loop prompts with skill-aware context.
+
 """
 loop_prompt_enhancer.py — Loop 任务 Prompt 自动增强
 

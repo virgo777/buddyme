@@ -1,3 +1,5 @@
+# Command base classes for the CLI command library.
+
 """
 cmd_library/base.py — 命令系统的类型定义和基类
 """

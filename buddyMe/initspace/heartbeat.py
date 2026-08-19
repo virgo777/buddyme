@@ -1,3 +1,5 @@
+# Heartbeat scheduler: keeps the agent alive and drives autonomous loops.
+
 """
 ================================================================================
 heartbeat.py - 心跳配置与日志管理器（纯数据辅助层）

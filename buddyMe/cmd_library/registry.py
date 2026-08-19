@@ -1,3 +1,5 @@
+# Command registry: name-to-handler resolution for the CLI.
+
 """
 cmd_library/registry.py — 命令注册表
 

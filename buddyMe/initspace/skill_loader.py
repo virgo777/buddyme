@@ -1,3 +1,5 @@
+# Three-level skill loader (builtin / workspace / user).
+
 """
 ================================================================================
 skill_loader.py — Skill 动态发现、解析与加载引擎

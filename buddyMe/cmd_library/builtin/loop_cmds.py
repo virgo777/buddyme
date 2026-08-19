@@ -1,3 +1,5 @@
+# Builtin CLI commands for loop task execution.
+
 """
 cmd_library/builtin/loop_cmds.py — 定时任务管理命令
 

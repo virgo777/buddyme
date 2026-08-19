@@ -1,4 +1,3 @@
-"""buddyMe 公共工具包。
+# buddyMe shared utilities.
 
-汇集跨模块复用的基础工具：原子文件写入（atomic）、统一路径解析（paths）。
-"""
+"""buddyMe 公共工具模块"""

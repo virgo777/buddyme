@@ -1,3 +1,5 @@
+# Builds and maintains the persistent memory store.
+
 """
 memorybuild.py — 对话记录持久化
 

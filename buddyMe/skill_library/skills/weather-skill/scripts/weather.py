@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Weather skill: fetch current weather for a city.
 """
 天气查询脚本 - 调用 wttr.in 免费 API 查询国内城市实时天气
 

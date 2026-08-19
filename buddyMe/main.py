@@ -1,8 +1,6 @@
-"""buddyMe 本地开发模式入口。
+# buddyMe local development entry point.
 
-直接以源码目录作为数据目录启动 Agent（区别于 CLI 模式的 ~/.buddyme），
-注册百度搜索工具后进入 query 交互循环，便于本地调试与快速验证。
-"""
+"""buddyMe 本地开发入口"""
 
 import os
 import time

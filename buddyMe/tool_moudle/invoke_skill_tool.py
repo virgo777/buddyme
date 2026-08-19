@@ -1,3 +1,5 @@
+# Tool that invokes loaded skills from the agent loop.
+
 """
 ================================================================================
 InvokeSkillTool — Skill 激活工具

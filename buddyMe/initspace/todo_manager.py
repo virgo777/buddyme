@@ -1,12 +1,6 @@
-"""智能体内部任务（Todo）管理模块。
+# LLM-backed task planner: splits a goal into ordered steps.
 
-包含两个核心组件：
-- plan_task(): 单次调用 LLM，将用户需求分解为带操作标签（[CREATE]/[EDIT]/
-  [VERIFY]/[SKILL] 等）的执行步骤列表；调用失败时降级为原始需求。
-- TodoManager: 智能体内部的待办清单管理器（对 LLM 不可见、不暴露为工具），
-  负责按计划创建任务、推进状态（pending → in_progress → completed）、
-  渲染带进度条的清单文本并注入上下文。
-"""
+"""LLM-backed task planner: splits a goal into ordered steps."""
 
 from typing import Dict, List, Optional
 

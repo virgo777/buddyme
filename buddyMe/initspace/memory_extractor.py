@@ -1,3 +1,5 @@
+# Extracts durable memories from conversations via LLM.
+
 """
 ================================================================================
 memory_extractor.py - 记忆提取器

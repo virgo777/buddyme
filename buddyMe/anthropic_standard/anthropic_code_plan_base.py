@@ -1,3 +1,5 @@
+# Anthropic-protocol code planning agent base.
+
 """
 anthropic_code_plan_base.py — Anthropic 兼容客户端基类
 

@@ -1,3 +1,5 @@
+# Builtin CLI commands for memory management.
+
 """
 cmd_library/builtin/memory_cmds.py — 记忆管理命令
 

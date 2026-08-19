@@ -1,11 +1,6 @@
-"""工具系统抽象层。
+# Abstract tool base and tool-executor primitives shared by all tools.
 
-定义工具调用的核心抽象，供 Agent 与各具体工具（bash、搜索、技能调用等）复用：
-- BaseTool：所有工具的抽象基类，规范 name / description / parameters / execute，
-  并提供符合 OpenAI Tool Calling 协议的 get_schema()。
-- BaseToolExecutor / ToolExecutor：工具注册与执行的统一入口，自动处理异常、
-  对外屏蔽底层差异。StandardToolExecutor 为兼容旧代码的别名。
-"""
+"""Abstract tool base and tool-executor primitives shared by all tools."""
 
 import logging
 from abc import ABC, abstractmethod

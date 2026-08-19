@@ -1,3 +1,5 @@
+# Builtin system-level CLI commands.
+
 """
 cmd_library/builtin/system_cmds.py — 系统命令
 

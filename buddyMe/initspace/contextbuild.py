@@ -1,3 +1,5 @@
+# Builds the runtime context (persona, env, skills) injected into prompts.
+
 """
 ================================================================================
 contextbuild.py - 动态 System Prompt 构建器

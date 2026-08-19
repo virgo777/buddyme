@@ -1,3 +1,5 @@
+# Unified LLM client that auto-detects OpenAI / Anthropic protocol per model.
+
 """
 unified_client.py — 统一 LLM 客户端
 

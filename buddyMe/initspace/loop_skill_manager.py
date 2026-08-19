@@ -1,3 +1,5 @@
+# Manages skill loading for loop executions.
+
 """
 loop_skill_manager.py — Loop Skill 生命周期管理（JSON 格式）
 

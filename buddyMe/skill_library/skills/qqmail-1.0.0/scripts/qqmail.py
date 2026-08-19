@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# QQ Mail skill: draft and send emails via SMTP.
 """
 QQ Mail Manager - IMAP/SMTP client for QQ邮箱
 

@@ -1,3 +1,5 @@
+# Retrieves and injects relevant memories into prompts.
+
 """
 ================================================================================
 use_memory.py - 通用记忆管理器

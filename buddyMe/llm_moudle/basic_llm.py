@@ -1,3 +1,5 @@
+# Unified LLM invocation module supporting all providers via model name.
+
 """
 basic_llm.py — 统一大模型调用模块
 

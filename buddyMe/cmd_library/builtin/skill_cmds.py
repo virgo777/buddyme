@@ -1,3 +1,5 @@
+# Builtin CLI commands for skill management.
+
 """
 cmd_library/builtin/skill_cmds.py — Skill 相关命令
 
