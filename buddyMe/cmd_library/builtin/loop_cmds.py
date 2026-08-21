@@ -40,7 +40,8 @@ def register_loop_commands(registry: CommandRegistry) -> None:
             "/loop --list              查看所有任务\n"
             "/loop --remove <id>       删除任务\n"
             "/loop --enable <id>       启用任务\n"
-            "/loop --disable <id>      禁用任务"
+            "/loop --disable <id>      禁用任务\n"
+            "/loop --history <id>      查看运行历史"
         ),
         category="task",
     ))
@@ -151,6 +152,11 @@ def cmd_loop(ctx: CommandContext) -> CommandResult:
         if len(parts) < 2:
             return CommandResult(success=False, message="用法: /loop --disable <任务id>")
         return _loop_toggle(ctx, parts[1].strip(), enabled=False)
+    if stripped.startswith("history"):
+        parts = stripped.split(None, 1)
+        if len(parts) < 2:
+            return CommandResult(success=False, message="用法: /loop --history <任务id>")
+        return _loop_history(ctx, parts[1].strip())
 
     # 默认：添加任务 → 解析 <间隔> <描述>
     return _loop_add(ctx, args)
@@ -170,11 +176,36 @@ def _loop_usage() -> CommandResult:
             "  /loop --remove <id>       删除任务\n"
             "  /loop --enable <id>       启用任务\n"
             "  /loop --disable <id>      禁用任务\n"
+            "  /loop --history <id>      查看运行历史（0.2.0）\n"
             "  /loop start               启动心跳系统\n"
             "  /loop stop                停止心跳系统\n\n"
-            "间隔格式: 30m(分钟) 1h(小时) 2d(天) 或纯数字(默认分钟)"
+            "间隔格式: 30m(分钟) 1h(小时) 2d(天) 或纯数字(默认分钟)\n"
+            "每日定点任务用 /cron <HH:MM> <任务描述>"
         ),
     )
+
+
+def _loop_history(ctx: CommandContext, task_id: str) -> CommandResult:
+    """查看某任务的运行历史（最近 20 条：状态 + 耗时；0.2.0 新增）。"""
+    hb = ctx.agent.heartbeat
+    data = hb._load_config()
+    task = next((t for t in data.get("tasks", []) if t.get("id") == task_id), None)
+    if not task:
+        return CommandResult(success=False, message=f"任务 '{task_id}' 不存在")
+
+    hist = task.get("history") or []
+    lines = [f"运行历史（{task_id}，最近 {len(hist)} 条）:", "-" * 46]
+    if not hist:
+        lines.append("  （暂无记录——任务还没执行过）")
+    else:
+        status_icon = {"ok": "✓", "timeout": "⏱", "error": "✗"}
+        for h in reversed(hist):   # 最新在前
+            icon = status_icon.get(h.get("status"), "?")
+            lines.append(
+                f"  {icon} {h.get('time', '?')}  {h.get('status', '?'):<8} "
+                f"{h.get('duration_s', 0)}s"
+            )
+    return CommandResult(message="\n".join(lines))
 
 
 def _loop_add(ctx: CommandContext, args: str) -> CommandResult:

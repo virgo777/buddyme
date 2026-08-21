@@ -18,6 +18,26 @@
 
 buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复杂任务自动拆解为子任务，逐一规划、执行、验证，并合并结果。内置 25+ 技能、8 个工具、完整的记忆系统和定时调度能力，可作为编程助手或通用任务代理使用。
 
+## 🚀 升级说明
+
+### v0.2.0（2026-08-22）
+
+本次版本围绕**定时任务可观测性**与**用量透明**新增三项特性，全部本地零 Token 开销：
+
+| 新特性 | 命令 | 说明 |
+|--------|------|------|
+| **会话统计** | `/stats` | 一览本次会话的 token 输入/输出、任务次数、工具调用 Top 榜、使用技能与生成文件数——agent 内部早已统计，现在直接呈现给用户 |
+| **每日定点任务** | `/cron <HH:MM> <任务>` | `09:00` 这样的每日定点触发（±5 分钟容差），与 `/loop` 的间隔循环互补——「每 30 分钟」用 loop，「每天早上 9 点」用 cron |
+| **运行历史** | `/loop --history <id>` · `/cron --history <id>` | 心跳任务每次执行记录状态（成功 ✓ / 超时 ⏱ / 失败 ✗）与耗时，保留最近 20 条——后台任务跑得怎么样，一眼可查 |
+
+升级方式：`pip install --upgrade .` 后 `buddyme` 启动，输入 `/help` 即可看到新命令。
+
+<details>
+<summary><b>历史版本</b></summary>
+
+- **v0.1.x** — 多模型热切换、三阶段任务执行、技能系统三级加载、持久记忆（衰减+合并）、心跳循环任务、双协议适配
+</details>
+
 <div style="background-color: #f8f9fa; padding: 18px 22px; border-radius: 8px; margin: 28px 0; border-left: 4px solid #e67e22;">
   <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="http://49.235.53.176/" style="color: #2563eb; text-decoration: none;">BuddyMe Blog</a> 阅读最新文章与技术分享。</p>
   <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 更新推荐阅读</p>
@@ -35,7 +55,8 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 - **工具系统** — 内置 bash、文件读写/编辑、搜索、glob 等 8 个工具，支持自定义扩展
 - **技能系统** — 25+ 预置技能（API 设计、前端开发、Python 测试等），三级渐进加载，运行时热重载
 - **持久记忆** — 用户画像、对话摘要、历史日志跨会话保持，支持记忆衰减与合并
-- **定时任务** — `/loop` 命令创建循环/定时任务，心跳线程后台轮询
+- **定时任务** — `/loop` 间隔循环 + `/cron` 每日定点，心跳线程后台轮询，带运行历史
+- **会话统计** — `/stats` 一览 token 用量、工具调用分布与技能使用，本地零开销
 - **命令系统** — `/` 前缀命令直接处理，不消耗 LLM Token
 - **双协议适配** — 自动识别 OpenAI 兼容 / Anthropic 兼容协议，统一调用接口
 
@@ -151,7 +172,22 @@ query: /model --switch deepseek  # 切换到 DeepSeek
 ```
 query: /loop 30m 检查当前项目的测试是否全部通过
 query: /loop --list         # 查看运行中的任务
+query: /loop --history abc12345  # 查看某任务的运行历史（成功/失败/耗时）
 query: /loop --remove abc12345  # 移除任务
+```
+
+### 每日定点任务（0.2.0 新增）
+
+```
+query: /cron 09:00 每天早上总结昨日对话并写入 memory_summary
+query: /cron --list              # 查看所有每日任务
+query: /cron --history <任务id>   # 查看运行历史
+```
+
+### 会话统计（0.2.0 新增）
+
+```
+query: /stats    # 本次会话 token 用量 / 工具调用 Top / 技能使用 / 生成文件数
 ```
 
 ### 记忆管理
@@ -184,6 +220,9 @@ query: /memory --update     # 手动触发记忆提取
 | `/log --search <关键词>` | | 搜索对话日志 |
 | `/heartbeat` | `/hb` | 心跳任务管理 |
 | `/loop <间隔> <任务>` | `/lp` | 创建定时任务 |
+| `/loop --history <id>` | | 查看任务运行历史（0.2.0） |
+| `/cron <HH:MM> <任务>` | | 创建每日定点任务（0.2.0） |
+| `/stats` | `/st` | 会话统计（token/工具/技能，0.2.0） |
 
 ## 内置工具
 

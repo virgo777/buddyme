@@ -129,6 +129,15 @@ class AgentMain:
         self._token_in: int = 0
         self._token_out: int = 0
 
+        # ★ 会话级累计统计（跨 invoke 累加，/stats 命令展示；0.2.0）
+        self.session_started_at: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.session_invoke_count: int = 0
+        self.session_token_in: int = 0
+        self.session_token_out: int = 0
+        self.session_tool_calls: Dict[str, int] = {}   # 工具名 → 次数
+        self.session_skills: List[str] = []            # 去重的技能名
+        self.session_files_written: int = 0
+
         self._MAX_SUBTASK_RESULT_LEN = self._sub_agent_max_token
         self._MAX_TOOLS_COMPRESS_LEN = _args["MAX_TOOLS_COMPRESS_LEN"]
         self._MAX_SEARCH_CALLS = _args["MAX_SEARCH_CALLS"]
@@ -521,6 +530,18 @@ class AgentMain:
             logger.info("=" * 60)
             logger.info("[Skill] 本次任务共使用 %d 个技能: %s", len(self._used_skills), skill_summary)
             logger.info("=" * 60)
+
+        # ★ 会话级累计（/stats 展示；0.2.0）
+        self.session_invoke_count += 1
+        self.session_token_in += self._token_in
+        self.session_token_out += self._token_out
+        for tool_record in self._used_tools:
+            tname = tool_record.get("tool_name", "?")
+            self.session_tool_calls[tname] = self.session_tool_calls.get(tname, 0) + 1
+        for sk in self._used_skills:
+            if sk not in self.session_skills:
+                self.session_skills.append(sk)
+        self.session_files_written += len(self._written_files)
 
         self.conv_logger.log(
             query=user_input,
@@ -1927,24 +1948,35 @@ class AgentMain:
                 )
                 duration = round(time.time() - start_time, 2)
                 logger.info(f"[Heartbeat] 任务完成: {task_name}, 耗时 {duration}s")
+                run_status = "ok"
             except asyncio.TimeoutError:
                 duration = round(time.time() - start_time, 2)
                 logger.error(
                     f"[Heartbeat] 任务超时: {task_name}, {duration}s > {task_timeout}s"
                 )
                 result = None
+                run_status = "timeout"
             except Exception as e:
                 duration = round(time.time() - start_time, 2)
                 logger.error(f"[Heartbeat] 任务失败: {task_name}, 错误: {e}")
                 result = None
+                run_status = "error"
 
-            # 更新 last_run（重新加载最新数据，避免覆盖其他线程新增的任务）
+            # 更新 last_run + 运行历史（重新加载最新数据，避免覆盖其他线程新增的任务）
             now_iso = datetime.now().isoformat()
             with self.heartbeat._lock:
                 fresh_data = self.heartbeat._load_config()
                 for t in fresh_data.get("tasks", []):
                     if t.get("id") == task_id:
                         t["last_run"] = now_iso
+                        # ★ 运行历史（0.2.0）：保留最近 20 条（成功/失败/超时 + 耗时）
+                        hist = t.setdefault("history", [])
+                        hist.append({
+                            "time": now_iso[:19],
+                            "status": run_status,
+                            "duration_s": duration,
+                        })
+                        del hist[:-20]
                         break
                 self.heartbeat._save_config(fresh_data)
 

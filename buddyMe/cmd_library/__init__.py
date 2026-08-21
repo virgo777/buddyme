@@ -54,6 +54,10 @@ def create_registry(prefix: str = "/") -> CommandRegistry:
     from .builtin.loop_cmds import register_loop_commands
     register_loop_commands(registry)
 
+    # 注册会话统计 + 每日定时命令（0.2.0）
+    from .builtin.stats_cmds import register_stats_commands
+    register_stats_commands(registry)
+
     return registry
 
 
