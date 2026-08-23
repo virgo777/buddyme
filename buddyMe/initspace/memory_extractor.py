@@ -85,7 +85,15 @@ class MemoryExtractor:
         if not abs_path.exists():
             return ""
 
-        data = json.loads(abs_path.read_text(encoding="utf-8"))
+        try:
+            data = json.loads(abs_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            # 半写入/损坏的日志不应导致整个记忆提取任务失败
+            logger.warning(f"[MemoryExtractor] 读取对话日志失败，跳过: {e}")
+            return ""
+        if not isinstance(data, dict):
+            logger.warning("[MemoryExtractor] 对话日志格式异常（非对象），跳过")
+            return ""
 
         # 生成最近 N 日的日期键
         today = datetime.now()

@@ -55,13 +55,25 @@ class AnthropicCodePlanClient(BaseLLMClient):
     # HTTP 客户端管理
     # ------------------------------------------------------------------
 
+    async def _discard_client(self, client: Optional[httpx.AsyncClient]):
+        """关闭并丢弃旧客户端，避免连接池泄漏；失败只记日志。"""
+        if client is None:
+            return
+        try:
+            await client.aclose()
+        except Exception as e:
+            logger.warning(f"[{self.model_name}] 关闭旧客户端失败: {e}")
+
     async def _get_client(self) -> httpx.AsyncClient:
         current_loop = asyncio.get_running_loop()
         current_loop_id = id(current_loop)
 
         if self._client is not None and self._client_loop_id != current_loop_id:
+            # 事件循环已切换：旧客户端绑定的 loop 不可复用，先关闭再丢弃
+            old_client = self._client
             self._client = None
             self._client_loop_id = None
+            await self._discard_client(old_client)
 
         if self._client is None:
             timeout = httpx.Timeout(
@@ -246,14 +258,14 @@ class AnthropicCodePlanClient(BaseLLMClient):
                 delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
                 jitter = delay * random.uniform(0.75, 1.25)
                 logger.warning(f"[{self.model_name}] 连接失败 (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试): {e}")
-                self._client = None
+                await self._discard_client(client)
                 client = await self._get_client()
                 await asyncio.sleep(jitter)
                 continue
 
             except Exception as e:
                 logger.error(f"[{self.model_name}] 请求失败: {e}")
-                self._client = None
+                await self._discard_client(client)
                 raise
 
         logger.error(f"[{self.model_name}] 已重试{max_retries}次，全部失败，无模型可回退")

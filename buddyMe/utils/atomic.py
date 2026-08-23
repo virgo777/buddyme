@@ -21,7 +21,8 @@ def atomic_write(path: Union[str, Path], content: str, encoding: str = "utf-8") 
         dir=str(target.parent), prefix="." + target.name + ".", suffix=".tmp"
     )
     try:
-        with open(fd, "w", encoding=encoding) as f:
+        # os.fdopen 接管 fd：即使构造/写入阶段抛异常，with 退出时也会关闭 fd
+        with os.fdopen(fd, "w", encoding=encoding) as f:
             f.write(content)
             f.flush()
             os.fsync(f.fileno())

@@ -115,7 +115,10 @@ class HeartbeatManager:
         end_parts = active.get("end", "23:59").split(":")
         start_min = int(start_parts[0]) * 60 + int(start_parts[1])
         end_min = int(end_parts[0]) * 60 + int(end_parts[1])
-        return start_min <= now_minutes <= end_min
+        # 支持跨午夜时段（如 22:00-06:00）
+        if start_min <= end_min:
+            return start_min <= now_minutes <= end_min
+        return now_minutes >= start_min or now_minutes <= end_min
 
     def _should_run(self, task: Dict[str, Any]) -> bool:
         """

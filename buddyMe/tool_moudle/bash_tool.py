@@ -207,7 +207,11 @@ class ReadFileTool(BaseTool):
 
             total_lines = len(all_lines)
 
-            # offset/limit：从 all_lines 中切片
+            # offset/limit：从 all_lines 中切片（schema 为 number，模型可能输出浮点，须强转 int）
+            if limit:
+                limit = int(limit)
+            if offset:
+                offset = int(offset)
             start = (offset - 1) if offset and offset > 1 else 0
             if limit:
                 selected = all_lines[start:start + limit]
@@ -428,6 +432,8 @@ class GrepTool(BaseTool):
         max_results: int = 100
     ) -> str:
         try:
+            # schema 为 number，模型可能输出浮点，须强转 int（否则列表切片抛 TypeError）
+            max_results = int(max_results) if max_results else max_results
             compiled = re.compile(pattern, re.IGNORECASE)
         except re.error as e:
             return f"错误：无效的正则表达式 - {e}"
@@ -559,6 +565,7 @@ class GlobTool(BaseTool):
             return f"错误：路径 {search_path} 不存在"
 
         full_pattern = str(search_path / pattern)
+        max_results = int(max_results) if max_results else max_results
         matches = glob_module.glob(full_pattern, recursive=True)
 
         # 过滤掉隐藏文件和常见忽略目录中的文件
@@ -582,7 +589,7 @@ class GlobTool(BaseTool):
         output_lines = [f"找到 {len(rel_paths)} 个匹配 '{pattern}' 的文件：\n"]
         output_lines.extend(rel_paths)
 
-        total = len(glob_module.glob(full_pattern, recursive=True))
+        total = len(filtered)
         if total > max_results:
             output_lines.append(f"\n... 共 {total} 个文件，仅显示前 {max_results} 个")
 

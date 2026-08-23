@@ -72,6 +72,9 @@ def main():
             reply = _invoke_with_spinner(ag, inp)
             if reply:
                 console.print(reply)
+            # 命令（如 /exit）要求退出 REPL
+            if ag._last_cmd_should_exit:
+                break
         except (KeyboardInterrupt, EOFError):
             console.print("\n再见!", style="bold yellow")
             ag.close()

@@ -221,6 +221,8 @@ def _memory_clear(ctx: CommandContext) -> CommandResult:
     try:
         mem = ctx.agent.user_memory
         mem.data = {}
+        # sections 也须清空，否则 save() 会按旧标题重建出空骨架
+        mem.sections = []
         mem.save()
         history_path = mem.history_path
         if os.path.exists(history_path):

@@ -104,7 +104,7 @@ def _model_switch(ctx: CommandContext, model_name: str) -> CommandResult:
     agent = ctx.agent
 
     # 校验1：模型是否存在
-    if model_name not in agent._CLIENT_MAP:
+    if model_name not in agent.supported_models():
         supported = ", ".join(agent.supported_models())
         return CommandResult(
             success=False,
@@ -150,7 +150,7 @@ def _api_key_list() -> CommandResult:
     lines = []
     for name in ModelConfig.list_models():
         key = ModelConfig.get_api_key(name)
-        masked = (key[:8] + "..." + key[-4:]) if len(key) > 12 else "(未设置)"
+        masked = (key[:8] + "..." + key[-4:]) if len(key) > 12 else (key if key else "(未设置)")
         lines.append(f"  {name:<10} {masked}")
     return CommandResult(message="API Keys:\n" + "\n".join(lines))
 

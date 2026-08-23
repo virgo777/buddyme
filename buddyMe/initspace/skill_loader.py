@@ -89,8 +89,15 @@ class SkillLoader:
 
                 meta = self._parse_frontmatter(str(skill_md_path), str(entry_path))
                 if meta:
-                    self._skills[meta.name] = meta
-                    logger.info("[SkillLoader] 发现 Skill: %s -> %s", meta.name, entry_path)
+                    # 用户目录先扫描、优先保留；同名时包内置模板不覆盖用户 Skill
+                    if meta.name in self._skills:
+                        logger.info(
+                            "[SkillLoader] 跳过同名 Skill（用户目录优先）: %s -> %s",
+                            meta.name, entry_path,
+                        )
+                    else:
+                        self._skills[meta.name] = meta
+                        logger.info("[SkillLoader] 发现 Skill: %s -> %s", meta.name, entry_path)
 
         logger.info("[SkillLoader] 共发现 %d 个 Skill", len(self._skills))
 

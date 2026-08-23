@@ -175,7 +175,7 @@ class AgentMain:
             self.system_prompt = system_prompt
         else:
             self._rebuild_system_prompt()
-        logger.info(f"[Agent] system prompt 已构建，内容: {(self.system_prompt)} ")
+        logger.info("[Agent] system prompt 已构建，长度 %d 字符", len(self.system_prompt))
 
         #建立和进行用户自进化-----------------------------------------
         from buddyMe.initspace.use_memory import UseMemory
@@ -323,9 +323,12 @@ class AgentMain:
         if os.path.exists(sub_agent_path):
             with open(sub_agent_path, "r", encoding="utf-8") as f:
                 content = f.read()
-        return content.format(
-            max_steps=self.max_steps,
-            max_output=self._sub_agent_max_token,
+        # 用 replace 而非 str.format：模板里若有字面 { }（JSON 示例、代码块），
+        # format 会抛 KeyError/ValueError 导致整个任务失败
+        return (
+            content
+            .replace("{max_steps}", str(self.max_steps))
+            .replace("{max_output}", str(self._sub_agent_max_token))
         )
 
     def _init_user_workspace(self):
@@ -365,11 +368,10 @@ class AgentMain:
 
     def add_message(self, role: str, content: str):
         """添加消息到历史"""
-        if len(self.messages) >= self.max_messages_length:
-            # 保留 system prompt (index 0) + 最新 N-1 条
-            self.messages = [self.messages[0]] + self.messages[-(self.max_messages_length - 1):]
-
         self.messages.append({"role": role, "content": content})
+        # append 后再截断，保证列表长度不超过 max_messages_length
+        if len(self.messages) > self.max_messages_length:
+            self.messages = self.messages[-self.max_messages_length:]
 
     def reset(self):
         """重置对话历史"""
@@ -632,6 +634,7 @@ class AgentMain:
         """所有子任务开始前：创建 JSON 文件，初始化状态"""
         total = len(plans)
         data = {}
+        seen_texts = set()
         for idx, text in enumerate(plans):
             is_first = (idx == 0)
             is_last = (idx == total - 1)
@@ -640,7 +643,10 @@ class AgentMain:
                 tags.append("start_task")
             if is_last or total == 1:
                 tags.append("end_task")
-            data[text] = {
+            # 纯文本做键时，重复的步骤文本会互相覆盖，加序号保证键唯一
+            key = text if text not in seen_texts else f"[{idx}] {text}"
+            seen_texts.add(text)
+            data[key] = {
                 "status": "pending",
                 "tags": tags,
                 "result": ""
@@ -1738,12 +1744,17 @@ class AgentMain:
         """读取文件最后 max_chars 个字符（用于预注入 prompt，避免 LLM 浪费步骤读大文件）。"""
         try:
             file_size = os.path.getsize(file_path)
-            with open(file_path, "r", encoding="utf-8") as f:
+            # 二进制模式 seek：文本模式 seek 用字节偏移，落在多字节 UTF-8 字符中间会抛
+            # UnicodeDecodeError，中文大文件会静默返回空串
+            with open(file_path, "rb") as f:
                 if file_size > max_chars:
                     f.seek(file_size - max_chars)
+                    pos = f.tell()
                     f.readline()  # 跳过可能截断的第一行
-                    return f.read()
-                return f.read()
+                    # 边界：整个剩余内容只有一行时 readline 会吃光，回退到 seek 位置
+                    if f.tell() >= file_size:
+                        f.seek(pos)
+                return f.read().decode("utf-8", errors="ignore")
         except Exception:
             return ""
 

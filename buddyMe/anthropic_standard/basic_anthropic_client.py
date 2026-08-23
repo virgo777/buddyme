@@ -233,8 +233,15 @@ class OpenAICompatibleClient(BaseLLMClient):
 
         # 场景：事件循环发生变化（如多次调用 asyncio.run），重置旧客户端
         if self._client is not None and self._client_loop_id != current_loop_id:
+            # 旧客户端绑定在已关闭的事件循环上，先关闭释放连接池再丢弃
+            old_client = self._client
             self._client = None
             self._client_loop_id = None
+            if old_client:
+                try:
+                    await old_client.aclose()
+                except Exception as e:
+                    logger.warning(f"[{self.model_name}] 关闭旧客户端失败: {e}")
 
         # 客户端不存在：创建新的异步客户端（带连接池配置）
         if self._client is None:
@@ -466,7 +473,7 @@ class OpenAICompatibleClient(BaseLLMClient):
 
         s = arguments_str.strip()
         # 尝试补全 JSON：找最后一个完整的键值对
-        for truncate_char in ['",', '}", ', '"}', '\\n']:
+        for truncate_char in ['",', '}", ', '"}', '\n']:
             last_pos = s.rfind(truncate_char)
             if last_pos > 0:
                 truncated = s[:last_pos + len(truncate_char)]
