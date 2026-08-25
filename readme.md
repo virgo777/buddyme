@@ -50,7 +50,7 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 
 ## 核心特性
 
-- **多模型支持** — GLM、DeepSeek、ERNIE、Qwen、MiMo，运行时一键切换，零中断
+- **多模型支持** — GLM、DeepSeek、ERNIE、Qwen、MiMo、MiniMax，运行时一键切换，零中断
 - **三阶段任务执行** — 规划 → 子任务执行 → 结果合并，复杂任务自动拆解
 - **工具系统** — 内置 bash、文件读写/编辑、搜索、glob 等 8 个工具，支持自定义扩展
 - **技能系统** — 25+ 预置技能（API 设计、前端开发、Python 测试等），三级渐进加载，运行时热重载
@@ -71,6 +71,9 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 | `ernie` | 百度千帆 | ernie-5.1 | 65,536 |
 | `xiaomi` | 小米 | mimo-v2-pro | 131,072 |
 | `qwen` | 阿里通义 | qwen3.6-plus | 65,536 |
+| `minimax` | MiniMax | MiniMax-M2.7 | 192,000 |
+| `minimax_highspeed` | MiniMax | MiniMax-M2.7-highspeed | 192,000 |
+| `minimax_code_plan` | MiniMax | MiniMax-M2.7 | 192,000 |
 
 ## 安装
 
@@ -105,6 +108,7 @@ DEEPSEEK_API_KEY=your_deepseek_api_key
 ERNIE_API_KEY=your_ernie_api_key
 XIAOMI_API_KEY=your_xiaomi_api_key
 QWEN_API_KEY=your_qwen_api_key
+MINIMAX_API_KEY=your_minimax_api_key
 ```
 
 只需配置你实际使用的模型对应的 Key，其余可留空。
