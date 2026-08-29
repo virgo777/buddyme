@@ -18,7 +18,9 @@
 
 任务全流程实拍：舌象图分析 → 生成标注诊疗图 → 产出 Word 报告（任务拆解 / 并发执行 / 交付物自动展示）。
 
-https://github.com/virgo777/buddyme/releases/download/demo-assets/demo.mp4
+![buddyMe 演示视频（自动播放）](assets/demo.gif)
+
+> 高清版（720p / 含声音）：[demo.mp4](https://github.com/virgo777/buddyme/releases/download/demo-assets/demo.mp4)
 
 ---
 
