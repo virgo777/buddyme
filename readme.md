@@ -1,5 +1,7 @@
 <div align="center">
 
+**简体中文** | [English](README_EN.md)
+
 # buddyMe
 
 **BuddyMe — 构建更聪明的智能体**
