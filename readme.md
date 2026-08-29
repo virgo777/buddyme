@@ -18,9 +18,19 @@
 
 任务全流程实拍：舌象图分析 → 生成标注诊疗图 → 产出 Word 报告（任务拆解 / 并发执行 / 交付物自动展示）。
 
-![buddyMe 演示视频（自动播放）](assets/demo.gif)
+<p align="center">
+  <img src="assets/demo.gif" alt="buddyMe demo — tongue-diagnosis analysis, annotated diagram generation, Word report" width="82%">
+</p>
 
-> 高清版（720p / 含声音）：[demo.mp4](https://github.com/virgo777/buddyme/releases/download/demo-assets/demo.mp4)
+<p align="center">
+  中文 · 任务全流程实拍：舌象图分析 → 生成标注诊疗图 → 产出 Word 报告<br/>
+  English · Full task walkthrough: tongue-image analysis → annotated diagram generation → Word report delivery
+</p>
+
+<p align="center">
+  🎬 高清版 High-res (720p, with audio)：
+  <a href="https://github.com/virgo777/buddyme/releases/download/demo-assets/demo.mp4">demo.mp4</a>
+</p>
 
 ---
 
