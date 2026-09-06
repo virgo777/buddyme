@@ -6,6 +6,7 @@ import os
 import queue
 import threading
 import time
+from itertools import cycle
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,15 +35,14 @@ def _invoke_with_spinner(ag: agent.AgentMain, user_input: str) -> str:
     t = threading.Thread(target=_worker, daemon=True)
     t.start()
 
-    idx = 0
+    spinner = cycle(_SPINNERS)
     with console.status("") as status:
         while t.is_alive():
-            s = _SPINNERS[idx % len(_SPINNERS)]
+            s = next(spinner)
             status.update(
                 f"[bold cyan]{s} 思考中... "
                 f"[dim](in: {ag._token_in} · out: {ag._token_out})[/]"
             )
-            idx += 1
             t.join(timeout=0.25)
 
     status_type, value = result_queue.get()

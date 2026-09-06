@@ -55,15 +55,12 @@ def _load_brain_files(brain_dir: str) -> List[str]:
         非空文件内容的列表（按上述顺序排列，跳过空文件）。
     """
     filenames = ["SOUL.md", "IDENTITY.md", "AGENT.md", "HEARTBEAT.md"]
-    loaded: List[str] = []
 
-    for name in filenames:
-        path = str(Path(brain_dir) / name)
-        content = _load_md(path)
-        if content:
-            loaded.append(content)
-
-    return loaded
+    return [
+        content
+        for name in filenames
+        if (content := _load_md(str(Path(brain_dir) / name)))
+    ]
 
 def _parse_tool_description(description: str) -> Dict[str, str]:
     """

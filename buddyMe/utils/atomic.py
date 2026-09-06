@@ -27,9 +27,9 @@ def atomic_write(path: Union[str, Path], content: str, encoding: str = "utf-8") 
             f.flush()
             os.fsync(f.fileno())
         try:
-            os.replace(tmp, str(target))
+            os.replace(tmp, target)
         except OSError:
-            shutil.copy2(tmp, str(target))
+            shutil.copy2(tmp, target)
             os.remove(tmp)
     except BaseException:
         if os.path.exists(tmp):
