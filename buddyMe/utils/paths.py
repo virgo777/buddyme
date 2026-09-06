@@ -15,9 +15,7 @@ def get_package_dir() -> Path:
 def get_user_data_dir() -> Path:
     """用户数据目录。BUDDYME_HOME 环境变量可覆盖，默认 ~/.buddyme/"""
     env = os.environ.get("BUDDYME_HOME")
-    if env:
-        return Path(env).resolve()
-    return Path.home() / ".buddyme"
+    return Path(env).resolve() if env else Path.home() / ".buddyme"
 
 
 def get_workspace_dir() -> Path:
