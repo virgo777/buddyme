@@ -40,11 +40,8 @@
 
 buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复杂任务自动拆解为子任务，逐一规划、执行、验证，并合并结果。内置 25+ 技能、8 个工具、完整的记忆系统和定时调度能力，可作为编程助手或通用任务代理使用。
 
-## 🚀 升级说明
 
-### v0.2.0（2026-08-22）
-
-本次版本围绕**定时任务可观测性**与**用量透明**新增三项特性，全部本地零 Token 开销：
+围绕**定时任务可观测性**与**用量透明**新增三项特性，全部本地零 Token 开销：
 
 | 新特性 | 命令 | 说明 |
 |--------|------|------|
@@ -52,18 +49,12 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 | **每日定点任务** | `/cron <HH:MM> <任务>` | `09:00` 这样的每日定点触发（±5 分钟容差），与 `/loop` 的间隔循环互补——「每 30 分钟」用 loop，「每天早上 9 点」用 cron |
 | **运行历史** | `/loop --history <id>` · `/cron --history <id>` | 心跳任务每次执行记录状态（成功 ✓ / 超时 ⏱ / 失败 ✗）与耗时，保留最近 20 条——后台任务跑得怎么样，一眼可查 |
 
-升级方式：`pip install --upgrade .` 后 `buddyme` 启动，输入 `/help` 即可看到新命令。
-
-<details>
-<summary><b>历史版本</b></summary>
-
-- **v0.1.x** — 多模型热切换、三阶段任务执行、技能系统三级加载、持久记忆（衰减+合并）、心跳循环任务、双协议适配
-</details>
-
+## 🚀 博客说明
 <div style="background-color: #f8f9fa; padding: 18px 22px; border-radius: 8px; margin: 28px 0; border-left: 4px solid #e67e22;">
   <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="http://49.235.53.176/" style="color: #2563eb; text-decoration: none;">BuddyMe Blog</a> 阅读最新文章与技术分享。</p>
   <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 更新推荐阅读</p>
   <ul style="margin: 0; padding-left: 22px; line-height: 1.9;">
+    <li><a href="https://www.buddyme.cn/blog/plan-model-five-tier-planning" style="color: #2563eb; text-decoration: none;">Plan 模型五档体系：把 AI 的发挥度做成显式旋钮</a></li>
     <li><a href="http://49.235.53.176/blog/heartbeat-and-loop-skill-engine-deep-dive" style="color: #2563eb; text-decoration: none;">buddyMe 心跳系统与 Loop 引擎：让 AI 自己干活，还不花钱</a></li>
     <li><a href="http://49.235.53.176/blog/buddyme" style="color: #2563eb; text-decoration: none;">技术深度：buddyMe 框架任务拆解的 "盲拆" 问题与技能感知优化方案</a></li>
     <li><a href="http://49.235.53.176/blog/react-plan-and-execute-reflection" style="color: #2563eb; text-decoration: none;">ReAct、Plan-and-Execute 与 Reflection 的本质差异与落地指南</a></li>
