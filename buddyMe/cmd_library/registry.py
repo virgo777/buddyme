@@ -10,7 +10,6 @@ cmd_library/registry.py — 命令注册表
 """
 
 from __future__ import annotations
-import shlex
 from typing import Any, Dict, List, Optional, Tuple
 
 from .base import CommandContext, CommandHandler, CommandMeta, CommandResult
@@ -23,9 +22,11 @@ class CommandRegistry:
     使用方式:
         registry = CommandRegistry(prefix="/")
 
-        @registry.register(name="help", aliases=["h"], description="显示帮助")
         def cmd_help(ctx: CommandContext) -> CommandResult:
             return CommandResult(message="帮助信息...")
+
+        registry.register_handler("help", cmd_help, meta=CommandMeta(
+            name="help", aliases=["h"], description="显示帮助"))
 
         result = registry.dispatch(user_input, agent_instance)
     """
@@ -39,29 +40,6 @@ class CommandRegistry:
     # --------------------------------------------------------
     # 注册 API
     # --------------------------------------------------------
-
-    def register(
-        self,
-        name: str,
-        aliases: Optional[List[str]] = None,
-        description: str = "",
-        usage: str = "",
-        category: str = "general",
-        hidden: bool = False,
-    ):
-        """装饰器方式注册命令。"""
-        def decorator(handler: CommandHandler) -> CommandHandler:
-            meta = CommandMeta(
-                name=name,
-                aliases=aliases or [],
-                description=description,
-                usage=usage or f"{self._prefix}{name}",
-                category=category,
-                hidden=hidden,
-            )
-            self._add_command(name, handler, meta)
-            return handler
-        return decorator
 
     def register_handler(
         self,
@@ -135,19 +113,12 @@ class CommandRegistry:
                 ),
             )
 
-        # 解析参数列表（支持引号）
-        try:
-            args_list = shlex.split(args_text) if args_text.strip() else []
-        except ValueError:
-            args_list = args_text.split()
-
         ctx = CommandContext(
             agent=agent,
             model_name=getattr(agent, "model_name", "unknown"),
             raw_input=user_input,
             command_name=canonical,
             args_text=args_text,
-            args_list=args_list,
         )
 
         handler = self._handlers[canonical]
@@ -205,11 +176,3 @@ class CommandRegistry:
             )
         lines.append(f"\n输入 {self._prefix}help <命令名> 查看详细用法。")
         return "\n".join(lines)
-
-    @property
-    def prefix(self) -> str:
-        return self._prefix
-
-    @property
-    def command_count(self) -> int:
-        return len(self._handlers)

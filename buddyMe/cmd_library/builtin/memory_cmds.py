@@ -15,6 +15,7 @@ from datetime import datetime
 
 from ..base import CommandContext, CommandResult, CommandMeta
 from ..registry import CommandRegistry
+from .loop_cmds import _loop_start_stop
 
 
 def register_memory_commands(registry: CommandRegistry) -> None:
@@ -451,17 +452,8 @@ def _heartbeat_status(ctx: CommandContext) -> CommandResult:
 
 
 def _heartbeat_start_stop(ctx: CommandContext, start: bool) -> CommandResult:
-    """启动/停止整个心跳系统"""
-    if start:
-        if ctx.agent._heartbeat_running:
-            return CommandResult(message="心跳系统已在运行中")
-        ctx.agent.start_heartbeat()
-        return CommandResult(message="心跳系统已启动")
-    else:
-        if not ctx.agent._heartbeat_running:
-            return CommandResult(message="心跳系统已处于停止状态")
-        ctx.agent.stop_heartbeat()
-        return CommandResult(message="心跳系统已停止")
+    """启动/停止整个心跳系统（与 /loop --start/--stop 同一实现）"""
+    return _loop_start_stop(ctx, start)
 
 
 def _heartbeat_toggle(ctx: CommandContext, task_id: str, enabled: bool) -> CommandResult:

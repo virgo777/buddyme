@@ -93,8 +93,6 @@ class TodoManager:
     def __init__(self):
         # 待办任务列表，每个任务以字典形式存储（包含id、text、status）
         self.items: List[Dict] = []
-        # 内部计数器：追踪距离上次任务状态更新已过去多少轮对话
-        self._rounds_since_update: int = 0
 
     def create_from_plan(self, plan: List[str]) -> str:
         """
@@ -115,8 +113,6 @@ class TodoManager:
         if self.items:
             self.items[0]["status"] = "in_progress"
 
-        # 重置“未更新轮数”计数器
-        self._rounds_since_update = 0
         # 返回渲染好的任务清单
         return self.render()
 
@@ -137,12 +133,9 @@ class TodoManager:
             if item["status"] == "pending":
                 # 将其激活为新的 in_progress 任务
                 item["status"] = "in_progress"
-                # 重置“未更新轮数”计数器
-                self._rounds_since_update = 0
                 # 返回新激活的任务
                 return item
-        # 如果没有找到下一个任务，重置计数器并返回 None（表示全部完成）
-        self._rounds_since_update = 0
+        # 如果没有找到下一个任务，返回 None（表示全部完成）
         return None
 
     def is_empty(self) -> bool:

@@ -6,7 +6,7 @@ cmd_library/base.py — 命令系统的类型定义和基类
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, List, Protocol
 
 
 # ============================================================
@@ -31,11 +31,8 @@ class CommandContext:
     # 命令名（去掉前缀后的规范名）
     command_name: str
 
-    # 命令参数（命令名之后的部分，原始字符串）
+    # 命令参数（命令名之后的部分，原始字符串；各命令自行按需解析）
     args_text: str
-
-    # 解析后的参数列表（按空格分割，引号内视为一个参数）
-    args_list: List[str] = field(default_factory=list)
 
 
 # ============================================================
@@ -59,12 +56,10 @@ class CommandResult:
     Attributes:
         success: 是否成功执行
         message: 返回给用户的消息
-        data: 可选的附加数据
         should_exit: 是否应退出 Agent 主循环
     """
     success: bool = True
     message: str = ""
-    data: Optional[Dict[str, Any]] = None
     should_exit: bool = False
 
     def __str__(self) -> str:

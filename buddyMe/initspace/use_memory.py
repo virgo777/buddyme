@@ -51,7 +51,8 @@ class UseMemory:
     # 去重阈值
     SIMILARITY_THRESHOLD = 0.8
 
-    _SKIP_SECTIONS = frozenset({"说明"})
+    # 与 MemoryExtractor 共用同一份跳过段定义
+    _SKIP_SECTIONS = MemoryExtractor._SKIP_SECTIONS
 
     def __init__(self, md_path: str, conversation_log_path: str = "",
                  model_name: str = "glm",
@@ -65,7 +66,6 @@ class UseMemory:
         """
         self.md_path: str = md_path
         self.conversation_log_path: str = conversation_log_path
-        self.model_name: str = model_name
         self.data: Dict[str, Any] = {}
         self.sections: List[str] = []
         self.extractor = MemoryExtractor(

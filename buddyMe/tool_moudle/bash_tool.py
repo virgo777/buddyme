@@ -25,8 +25,9 @@ import os
 import re
 import asyncio
 import fnmatch
+import glob as glob_module
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from buddyMe.anthropic_standard.basic_anthropic_tool import BaseTool
 
 
@@ -475,12 +476,9 @@ class GrepTool(BaseTool):
             return f"未找到匹配项（搜索了 {files_searched} 个文件）"
 
         output_lines = [f"搜索了 {files_searched} 个文件，找到 {len(results)} 个匹配项：\n"]
-        for filepath, lineno, line in results[:max_results]:
+        for filepath, lineno, line in results:
             rel_path = os.path.relpath(filepath, str(search_path)) if search_path.is_dir() else filepath
             output_lines.append(f"{rel_path}:{lineno}: {line.rstrip()}")
-
-        if len(results) > max_results:
-            output_lines.append(f"\n... 还有 {len(results) - max_results} 个匹配项未显示")
 
         return "\n".join(output_lines)
 
@@ -557,8 +555,6 @@ class GlobTool(BaseTool):
         path: Optional[str] = None,
         max_results: int = 200
     ) -> str:
-        import glob as glob_module
-
         search_path = Path(path).resolve() if path else Path.cwd()
 
         if not search_path.exists():
@@ -588,9 +584,5 @@ class GlobTool(BaseTool):
 
         output_lines = [f"找到 {len(rel_paths)} 个匹配 '{pattern}' 的文件：\n"]
         output_lines.extend(rel_paths)
-
-        total = len(filtered)
-        if total > max_results:
-            output_lines.append(f"\n... 共 {total} 个文件，仅显示前 {max_results} 个")
 
         return "\n".join(output_lines)

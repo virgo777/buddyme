@@ -10,12 +10,11 @@ anthropic_code_plan_base.py — Anthropic 兼容客户端基类
 import asyncio
 import json
 import logging
-import random
 from typing import Any, Dict, List, Optional
 
 import httpx
 
-from buddyMe.anthropic_standard.basic_anthropic_client import BaseLLMClient
+from buddyMe.anthropic_standard.basic_anthropic_client import BaseLLMClient, _retry_jitter
 
 logger = logging.getLogger(__name__)
 
@@ -211,8 +210,6 @@ class AnthropicCodePlanClient(BaseLLMClient):
         if anthropic_tools:
             payload["tools"] = anthropic_tools
 
-        _BASE_RETRY_DELAY = 5
-        _MAX_RETRY_DELAY = 120
         max_retries = 5
         last_error = None
 
@@ -237,8 +234,7 @@ class AnthropicCodePlanClient(BaseLLMClient):
 
                 if status_code in (429, 500, 502, 503, 529):
                     last_error = RuntimeError(error_msg)
-                    delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
-                    jitter = delay * random.uniform(0.75, 1.25)
+                    jitter = _retry_jitter(attempt)
                     logger.warning(f"{error_msg} (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试)")
                     await asyncio.sleep(jitter)
                     continue
@@ -247,16 +243,14 @@ class AnthropicCodePlanClient(BaseLLMClient):
 
             except httpx.ReadTimeout:
                 last_error = RuntimeError(f"[{self.model_name}] 请求超时")
-                delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
-                jitter = delay * random.uniform(0.75, 1.25)
+                jitter = _retry_jitter(attempt)
                 logger.warning(f"[{self.model_name}] 请求超时 (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试)")
                 await asyncio.sleep(jitter)
                 continue
 
             except httpx.ConnectError as e:
                 last_error = RuntimeError(f"[{self.model_name}] 连接失败: {e}")
-                delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
-                jitter = delay * random.uniform(0.75, 1.25)
+                jitter = _retry_jitter(attempt)
                 logger.warning(f"[{self.model_name}] 连接失败 (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试): {e}")
                 await self._discard_client(client)
                 client = await self._get_client()

@@ -57,15 +57,12 @@ class HeartbeatManager:
         """
         self.config_path = Path(config_path).resolve()
         if not self.config_path.exists():
-            self.config_path = Path(_PROJECT_ROOT) / config_path
+            self.config_path = _PROJECT_ROOT / config_path
 
         # 存储从配置文件加载的全局配置
         self._config: Dict[str, Any] = {}
         # 存储从配置文件加载的任务列表
         self._tasks: List[Dict[str, Any]] = []
-
-        # 存储从配置文件加载的日志（内存中，不持久化到文件）
-        self._logs: Dict[str, List[Dict[str, Any]]] = {}
 
         # 文件读写锁（可重入，因为 add_task 内部调用 _save_config）
         self._lock = threading.RLock()
@@ -110,7 +107,8 @@ class HeartbeatManager:
         active = self._config.get("active_hours")
         if not active:
             return True
-        now_minutes = datetime.now().hour * 60 + datetime.now().minute
+        now = datetime.now()
+        now_minutes = now.hour * 60 + now.minute
         start_parts = active.get("start", "00:00").split(":")
         end_parts = active.get("end", "23:59").split(":")
         start_min = int(start_parts[0]) * 60 + int(start_parts[1])

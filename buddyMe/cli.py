@@ -5,7 +5,6 @@
 import os
 import queue
 import threading
-import time
 from itertools import cycle
 from pathlib import Path
 

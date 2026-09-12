@@ -12,8 +12,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-from buddyMe.initspace.utils import _load_md
-
 
 def _extract_facts(text: str) -> Dict[str, Any]:
     """从文本中提取结构化关键事实（纯正则，零LLM开销）。
@@ -86,7 +84,7 @@ class ConversationLogger:
             "model": model,
             "query": query,
             "response": response,
-            "response_summary": response[:500] if len(response) > 500 else response,
+            "response_summary": response[:500],
             "facts": _extract_facts(response),
             "tool_calls": tool_calls or [],
             **(extra or {}),

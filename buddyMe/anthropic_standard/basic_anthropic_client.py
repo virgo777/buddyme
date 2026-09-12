@@ -6,20 +6,17 @@ LLM 客户端通用 SDK 核心模块
 支持：消息格式转换、异步 HTTP 请求、响应标准化解析、工具调用、连接池管理
 """
 import random
-import time
 # ===================== 导入依赖模块 =====================
 # 抽象基类，用于定义接口规范
 from abc import ABC, abstractmethod
 # 类型注解，提升代码可读性和类型检查
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 # JSON 序列化/反序列化
 import json
 # 异步 HTTP 客户端（高性能，支持连接池）
 import httpx
 # 异步 I/O 框架
 import asyncio
-# 系统操作
-import os
 # 日志模块
 import logging
 
@@ -27,6 +24,12 @@ import logging
 # ===================== 日志初始化 =====================
 # 获取当前模块的日志实例，统一日志管理
 logger = logging.getLogger(__name__)
+
+
+def _retry_jitter(attempt: int, base: int = 5, cap: int = 120) -> float:
+    """指数退避 + 抖动：计算第 attempt 次重试前的等待秒数"""
+    delay = min(base * (2 ** attempt), cap)
+    return delay * random.uniform(0.75, 1.25)
 
 # ===================== 核心工具函数 =====================
 def convert_to_sdk_format(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -77,11 +80,8 @@ def convert_to_sdk_format(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]
                     "content": content if content else None,
                     "tool_calls": tool_calls
                 })
-            elif content:
-                # 纯文本消息：直接保留
-                result.append(msg)
             else:
-                # 空消息：直接保留
+                # 纯文本或空消息：直接保留
                 result.append(msg)
         # 4. 其他角色（user/tool）：直接保留
         else:
@@ -146,33 +146,6 @@ class BaseLLMClient(ABC):
     def close(self):
         """【抽象方法】关闭客户端，释放网络资源"""
         pass
-
-    def build_tool_result_message(
-        self,
-        tool_call_id: str,
-        tool_name: str,
-        result: Union[str, Dict]
-    ) -> Dict[str, Any]:
-        """
-        构建【工具执行结果】消息
-        用于工具调用后，将结果回传给大模型的第二轮对话
-
-        Args:
-            tool_call_id: 模型返回的工具调用 ID
-            tool_name: 工具名称
-            result: 工具执行结果（字符串/字典）
-
-        Returns:
-            标准格式的工具结果消息
-        """
-        # 字典类型结果转为 JSON 字符串
-        content = result if isinstance(result, str) else json.dumps(result, ensure_ascii=False)
-        return {
-            "role": "tool",
-            "tool_call_id": tool_call_id,
-            "name": tool_name,
-            "content": content
-        }
 
 # ===================== 实现类：OpenAI 兼容 API 客户端 =====================
 from buddyMe.llm_moudle import model_config
@@ -246,11 +219,12 @@ class OpenAICompatibleClient(BaseLLMClient):
         # 客户端不存在：创建新的异步客户端（带连接池配置）
         if self._client is None:
             # 配置超时时间
+            read_timeout = self._get_default_timeout()
             timeout = httpx.Timeout(
                 connect=30.0,      # 连接超时
-                read=self._get_default_timeout(),   # 读取超时
+                read=read_timeout, # 读取超时
                 write=30.0,        # 写入超时
-                pool=self._get_default_timeout(),   # 连接池超时
+                pool=read_timeout, # 连接池超时
             )
             # 配置连接池（限制并发，提升稳定性）
             limits = httpx.Limits(
@@ -308,8 +282,6 @@ class OpenAICompatibleClient(BaseLLMClient):
         self._prepare_payload(payload, tools, kwargs)
 
         # 指数退避重试参数
-        _BASE_RETRY_DELAY = 5   # 基础延迟(秒)
-        _MAX_RETRY_DELAY = 120  # 延迟上限(秒)
         max_retries = 5
         last_error = None
 
@@ -331,8 +303,7 @@ class OpenAICompatibleClient(BaseLLMClient):
 
                 if status_code in (429, 500, 502, 503, 529):
                     last_error = RuntimeError(error_msg)
-                    delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
-                    jitter = delay * random.uniform(0.75, 1.25)
+                    jitter = _retry_jitter(attempt)
                     logger.warning(f"{error_msg} (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试)")
                     await asyncio.sleep(jitter)
                     continue
@@ -341,16 +312,14 @@ class OpenAICompatibleClient(BaseLLMClient):
 
             except httpx.ReadTimeout:
                 last_error = RuntimeError(f"[{self.model_name}] 请求超时")
-                delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
-                jitter = delay * random.uniform(0.75, 1.25)
+                jitter = _retry_jitter(attempt)
                 logger.warning(f"[{self.model_name}] 请求超时 (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试)")
                 await asyncio.sleep(jitter)
                 continue
 
             except httpx.ConnectError as e:
                 last_error = RuntimeError(f"[{self.model_name}] 连接失败: {e}")
-                delay = min(_BASE_RETRY_DELAY * (2 ** attempt), _MAX_RETRY_DELAY)
-                jitter = delay * random.uniform(0.75, 1.25)
+                jitter = _retry_jitter(attempt)
                 logger.warning(f"[{self.model_name}] 连接失败 (第{attempt + 1}/{max_retries}次，{jitter:.1f}s 后重试): {e}")
                 old_client = self._client
                 self._client = None
@@ -491,15 +460,6 @@ class OpenAICompatibleClient(BaseLLMClient):
         logger.warning(f"[{self.model_name}] 工具 '{tool_name}' 参数无法修复")
         return {}
 
-    async def aclose(self):
-        """异步安全关闭客户端（推荐使用）"""
-        if self._client:
-            try:
-                await self._client.aclose()
-            except Exception:
-                pass  # 忽略关闭错误
-            self._client = None
-
     def close(self):
         """同步关闭客户端（兼容旧代码）"""
         client_to_close = self._client
@@ -522,11 +482,3 @@ class OpenAICompatibleClient(BaseLLMClient):
             await client.aclose()
         except Exception:
             pass
-
-    async def _safe_aclose(self):
-        """私有方法：安全关闭客户端，忽略所有异常"""
-        if self._client:
-            try:
-                await self._client.aclose()
-            except Exception:
-                pass

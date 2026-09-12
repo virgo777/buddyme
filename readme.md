@@ -280,6 +280,16 @@ query: /memory --update     # 手动触发记忆提取
 | `project-guidelines-example` | 项目规范模板 |
 | `configure-ecc` | ECC 配置 |
 
+## 官方站点技能 / Official Site Skills
+
+`skills/` 目录下的三个 BuddyMe 站点服务技能，各有独立仓库，可单独取用：
+
+| 技能 | 用途 | 独立仓库 |
+|------|------|----------|
+| `buddyme-genimg` | 免费生图（GPT-Image-2.5，三档质量） | [virgo777/buddyme-genimg](https://github.com/virgo777/buddyme-genimg) |
+| `buddyme-search-content` | 聚合搜索（多来源正文 + 双确认精选） | [virgo777/buddyme-search-content](https://github.com/virgo777/buddyme-search-content) |
+| `buddyme-search-list` | 普通搜索（多引擎聚合结果列表） | [virgo777/buddyme-search-list](https://github.com/virgo777/buddyme-search-list) |
+
 ## 架构概览
 
 ```

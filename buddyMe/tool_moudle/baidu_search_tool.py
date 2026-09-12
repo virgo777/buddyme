@@ -21,7 +21,7 @@ BaiduSearchTool - 百度搜索工具
 
 import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import httpx
 

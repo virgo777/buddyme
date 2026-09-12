@@ -17,7 +17,6 @@ bash / read_file 等已有工具完成实际操作。
 """
 
 import logging
-from typing import Optional
 
 from buddyMe.anthropic_standard.basic_anthropic_tool import BaseTool
 from buddyMe.initspace.skill_loader import SkillLoader
@@ -81,7 +80,7 @@ class InvokeSkillTool(BaseTool):
         # 首次未命中：重新扫描 skill 目录，可能运行中新增了技能
         if not instructions:
             logger.info("[Skill] >>> 未命中，重新扫描 skill 目录...")
-            added = self._loader.reload()
+            self._loader.reload()
             instructions = self._loader.load_instructions(skill_name)
 
         if not instructions:

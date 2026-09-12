@@ -39,6 +39,15 @@ class AgentMain:
         result = agent.invoke("写个方案")
     """
 
+    # 无已完成子任务时的占位哨兵值（读取与判断必须一致，收敛为常量防漂移）
+    _NO_COMPLETED_RESULTS = "暂无已完成的结果"
+
+    # 心跳任务允许使用的工具集（loop 任务不含 invoke_skill，避免与 prompt 冲突）
+    _HEARTBEAT_TOOLS_BASE = {
+        "bash", "read_file", "write_file", "edit_file", "grep", "glob", "baidu_search",
+    }
+    _HEARTBEAT_TOOLS_WITH_SKILL = _HEARTBEAT_TOOLS_BASE | {"invoke_skill"}
+
     @classmethod
     def supported_models(cls) -> list:
         """返回 model_config 中所有可用模型"""
@@ -271,47 +280,6 @@ class AgentMain:
         self._executor.register(tool)
         logger.info(f"[Agent] 后注册工具: {tool.name}")
 
-    def unregister_tool(self, tool_name: str) -> bool:
-        """
-        注销工具
-
-        Args:
-            tool_name: 工具名称
-
-        Returns:
-            是否注销成功
-        """
-        success = self._executor.unregister(tool_name)
-        if success:
-            logger.info(f"[Agent] 已注销工具: {tool_name}")
-        return success
-
-    def call_llm_sync(self, system_prompt: str, user_message: str) -> str:
-        """同步调用主模型（用于 loop prompt 增强等一次性场景）。
-
-        Args:
-            system_prompt: 系统提示
-            user_message: 用户消息
-
-        Returns:
-            模型的文本回复
-        """
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message},
-        ]
-        try:
-            response = asyncio.run(self._client.chat(messages=messages))
-            texts = [
-                b.get("text", "")
-                for b in response.get("content", [])
-                if b.get("type") == "text"
-            ]
-            return "\n".join(texts).strip()
-        except Exception as e:
-            logger.error(f"[Agent] call_llm_sync 失败: {e}")
-            return ""
-
     def _get_tool_schemas(self) -> List[Dict]:
         """获取已注册工具的 schema 列表（复用已注册的工具实例）"""
         return self._executor.get_all_schemas()
@@ -443,15 +411,19 @@ class AgentMain:
 
         return "\n\n".join(parts) if parts else ""
 
+    @staticmethod
+    def _close_quietly(client):
+        """尽力关闭客户端连接池，异常静默（用于多种收尾路径）"""
+        if client and hasattr(client, "close"):
+            try:
+                client.close()
+            except Exception:
+                pass
+
     def close(self):
         """关闭所有 LLM 客户端，释放连接池"""
         for client_attr in ("_client", "_sub_client", "_scheduled_sub_client"):
-            client = getattr(self, client_attr, None)
-            if client and hasattr(client, "close"):
-                try:
-                    client.close()
-                except Exception:
-                    pass
+            self._close_quietly(getattr(self, client_attr, None))
 
     def switch_model(self, new_model: str):
         """
@@ -470,11 +442,7 @@ class AgentMain:
             return
 
         # 关闭旧客户端
-        if self._client and hasattr(self._client, "close"):
-            try:
-                self._client.close()
-            except Exception:
-                pass
+        self._close_quietly(self._client)
 
         # 创建新客户端
         self._client = self._create_client(new_model)
@@ -513,13 +481,7 @@ class AgentMain:
         cost = round(time.time() - start_time, 2)
 
         # 收集本次任务写入的所有文件路径
-        for tool_record in self._used_tools:
-            if tool_record.get("tool_name") in ("write_file", "edit_file"):
-                file_path = tool_record.get("args", {}).get("path", "")
-                if file_path:
-                    abs_path = os.path.abspath(file_path)
-                    if abs_path not in self._written_files:
-                        self._written_files.append(abs_path)
+        self._refresh_written_files()
 
         # 向用户报告生成的文件地址
         if self._written_files:
@@ -560,12 +522,7 @@ class AgentMain:
         )
         # 只关闭本次调用使用的客户端，不影响心跳线程的 _scheduled_sub_client
         for attr in ("_client", "_sub_client"):
-            c = getattr(self, attr, None)
-            if c and hasattr(c, "close"):
-                try:
-                    c.close()
-                except Exception:
-                    pass
+            self._close_quietly(getattr(self, attr, None))
         return result
 
     def _track_usage(self, response: dict):
@@ -579,27 +536,19 @@ class AgentMain:
         self._token_in += usage.get("prompt_tokens", 0) or usage.get("input_tokens", 0)
         self._token_out += usage.get("completion_tokens", 0) or usage.get("output_tokens", 0)
 
-    def _sanitize_result(self, text: str, max_length: int = 0) -> str:
+    def _sanitize_result(self, text: str) -> str:
         """
-        清理子任务结果：逐行检测乱码并移除，可选截断。
+        清理子任务结果：逐行检测乱码并移除。
 
         Args:
             text: 原始结果文本
-            max_length: 最大允许长度，0 表示仅清理乱码不截断
         """
         if not text:
             return text
 
-        # 1. 逐行检测并移除乱码行
         lines = text.split('\n')
         clean_lines = [line for line in lines if not self._is_garbled_line(line)]
-        result = '\n'.join(clean_lines)
-
-        # 2. 截断至最大长度（max_length > 0 时生效）
-        if max_length > 0 and len(result) > max_length:
-            result = result[:max_length] + "\n...(结果过长已截断)"
-
-        return result
+        return '\n'.join(clean_lines)
 
     def _is_garbled_line(self, line: str) -> bool:
         """
@@ -679,9 +628,9 @@ class AgentMain:
             for task, info in data.items():
                 if info.get("status") == "completed":
                     parts.append(f"【{task}】\n{info.get('result', '无结果')}")
-            return "\n\n".join(parts) if parts else "暂无已完成的结果"
+            return "\n\n".join(parts) if parts else self._NO_COMPLETED_RESULTS
         except Exception:
-            return "暂无已完成的结果"
+            return self._NO_COMPLETED_RESULTS
 
     def _delete_subtask_file(self):
         """所有子任务结束后：删除 JSON 文件"""
@@ -747,6 +696,13 @@ class AgentMain:
                     if abs_path not in self._written_files:
                         self._written_files.append(abs_path)
 
+    @staticmethod
+    def _enrich_input(user_input: str, conversation_context: str) -> str:
+        """拼接跨轮对话上下文与当前用户需求（规划/短路两条路径共用）"""
+        if conversation_context:
+            return f"{conversation_context}\n\n{'=' * 40}\n\n当前用户需求:\n{user_input}"
+        return user_input
+
     async def _run_simple(self, user_input: str, conversation_context: str) -> str:
         """简单任务快速通道：单轮 LLM + 工具调用，跳过规划-拆解-合并"""
         logger.info("[短路] 检测到简单任务，跳过规划阶段")
@@ -765,9 +721,7 @@ class AgentMain:
             f"write_file 的 path 参数必须以该目录为基础路径。"
         )
 
-        enriched_input = user_input
-        if conversation_context:
-            enriched_input = f"{conversation_context}\n\n{'=' * 40}\n\n当前用户需求:\n{user_input}"
+        enriched_input = self._enrich_input(user_input, conversation_context)
 
         messages = [
             {"role": "system", "content": full_system + path_hint},
@@ -866,9 +820,7 @@ class AgentMain:
 
         # ===== 阶段1：任务规划（最小 prompt） =====
         # 规划时也注入对话上下文，让任务分解能感知前文
-        enriched_input = user_input
-        if conversation_context:
-            enriched_input = f"{conversation_context}\n\n{'=' * 40}\n\n当前用户需求:\n{user_input}"
+        enriched_input = self._enrich_input(user_input, conversation_context)
         plans = await todo_manager.plan_task(
             enriched_input,
             client=self._client,
@@ -885,7 +837,7 @@ class AgentMain:
         # ===== 阶段2：逐个执行子任务（独立 messages） =====
         sub_results = []
         self._last_episode = []  # 本次任务的子任务摘要
-        total_tasks = len(self.todo_manager.items)
+        total_tasks = num_subagent
         # 创建子任务 JSON 文件（记录状态和结果）
         if total_tasks > 0:
             self._init_subtask_file()
@@ -947,9 +899,13 @@ class AgentMain:
                     task_type = self._classify_subtask(item["text"])
                     logger.info(f"[子任务 {item['id']}] 类型: {task_type}")
 
+                    # 已生成文件清单（同一子任务内多次引用，只计算一次）
+                    written_files_list = "\n".join(f"  - {f}" for f in self._written_files) or "  (暂无)"
+                    # 前置子任务结果（本子任务执行前不会变化，只读取一次）
+                    _prev = self._read_completed_results() if i > 0 else ""
+
                     if is_end_task and i > 0:
                         # end_task：验证+修复模式
-                        written_files_list = "\n".join(f"  - {f}" for f in self._written_files) or "  (暂无)"
                         system_content = (
                             f"当前子任务: 最终验证与修复\n\n"
                             f"【已生成的文件】\n{written_files_list}\n\n"
@@ -976,10 +932,8 @@ class AgentMain:
                         )
                     elif task_type == "build":
                         # build 子任务：允许写文件，增量构建
-                        _prev = self._read_completed_results() if i > 0 else ""
-                        written_files_list = "\n".join(f"  - {f}" for f in self._written_files) or "  (暂无)"
                         prev_context = ""
-                        if _prev and _prev != "暂无已完成的结果":
+                        if _prev and _prev != self._NO_COMPLETED_RESULTS:
                             prev_context = f"\n\n【前置子任务结果】\n{_prev[:self._MAX_TOOLS_COMPRESS_LEN]}"
                         system_content = (
                             f"当前子任务: {item['text']}\n\n"
@@ -996,8 +950,7 @@ class AgentMain:
                         )
                     else:
                         # research 子任务：搜索/读取信息，不写文件
-                        _prev = self._read_completed_results() if i > 0 else ""
-                        if _prev and _prev != "暂无已完成的结果":
+                        if _prev and _prev != self._NO_COMPLETED_RESULTS:
                             system_content = (
                                 f"当前子任务: {item['text']}\n\n"
                                 f"【严格规则】\n"
@@ -1027,16 +980,14 @@ class AgentMain:
                         context_prefix = f"{conversation_context}\n\n{'=' * 40}\n\n"
 
                     if is_end_task and i > 0:
-                        written_files_list = "\n".join(f"  - {f}" for f in self._written_files) or "  (暂无)"
                         user_content = (
                             f"{context_prefix}"
                             f"请验证并修复以下已生成的文件:\n{written_files_list}\n\n"
                             f"原始需求: {user_input}"
                         )
                     elif task_type == "build" and i > 0:
-                        _prev = self._read_completed_results()
                         prev_section = ""
-                        if _prev and _prev != "暂无已完成的结果":
+                        if _prev and _prev != self._NO_COMPLETED_RESULTS:
                             prev_section = (
                                 f"\n\n{'=' * 40}\n"
                                 f"前置子任务已完成的结果:\n\n{_prev[:self._MAX_TOOLS_COMPRESS_LEN]}\n\n"
@@ -1051,8 +1002,7 @@ class AgentMain:
                         )
                     elif not is_end_task and i > 0:
                         # research 中间子任务
-                        _prev = self._read_completed_results()
-                        if _prev and _prev != "暂无已完成的结果":
+                        if _prev and _prev != self._NO_COMPLETED_RESULTS:
                             user_content = (
                                 f"{context_prefix}"
                                 f"请完成以下任务: {item['text']}\n\n"
@@ -1271,8 +1221,7 @@ class AgentMain:
             step_text = "\n".join(texts)
             if step_text:
                 full_text += step_text + "\n"  # 累积文本，而非覆盖
-                # 限制累积文本长度，避免后续步骤消息过长
-    
+
             # 处理截断：引导 LLM 用 edit_file 分段写入（而非追加上下文续写）
             if stop_reason in ["max_tokens", "length"]:
                 # 检查本轮是否已有 write_file 调用
@@ -1466,14 +1415,9 @@ class AgentMain:
             heartbeat_content = heartbeat_content.replace(rel, abs_path.replace("\\", "/"))
 
         # loop 任务不包含 invoke_skill，避免与 prompt 中的直接工具调用冲突
-        if no_skill:
-            _HEARTBEAT_ALLOWED_TOOLS = {
-                "bash", "read_file", "write_file", "edit_file", "grep", "glob", "baidu_search",
-            }
-        else:
-            _HEARTBEAT_ALLOWED_TOOLS = {
-                "bash", "read_file", "write_file", "edit_file", "grep", "glob", "invoke_skill", "baidu_search",
-            }
+        _HEARTBEAT_ALLOWED_TOOLS = (
+            self._HEARTBEAT_TOOLS_BASE if no_skill else self._HEARTBEAT_TOOLS_WITH_SKILL
+        )
         tool_schemas = self._get_tool_schemas()
         tool_desc_parts = []
         for schema in tool_schemas:
@@ -1541,14 +1485,9 @@ class AgentMain:
         ]
 
         # loop 任务不包含 invoke_skill，避免与 prompt 中的直接工具调用冲突
-        if no_skill:
-            _HEARTBEAT_ALLOWED_TOOLS = {
-                "bash", "read_file", "write_file", "edit_file", "grep", "glob", "baidu_search",
-            }
-        else:
-            _HEARTBEAT_ALLOWED_TOOLS = {
-                "bash", "read_file", "write_file", "edit_file", "grep", "glob", "invoke_skill", "baidu_search",
-            }
+        _HEARTBEAT_ALLOWED_TOOLS = (
+            self._HEARTBEAT_TOOLS_BASE if no_skill else self._HEARTBEAT_TOOLS_WITH_SKILL
+        )
         heartbeat_tools = [
             s for s in self._get_tool_schemas()
             if s.get("function", {}).get("name") in _HEARTBEAT_ALLOWED_TOOLS
@@ -1759,6 +1698,22 @@ class AgentMain:
             return ""
 
     @staticmethod
+    def _format_log_entry(entry: dict) -> str:
+        """将单条对话记录格式化为一行摘要（两个记忆提取器共用）"""
+        query = entry.get("query", "")
+        response = entry.get("response", "")
+        facts = entry.get("facts", {})
+        model = entry.get("model", "")
+        time_str = entry.get("time", "")
+        # 优先使用结构化 facts，其次使用 response_summary，兜底 response
+        if facts:
+            resp_short = json.dumps(facts, ensure_ascii=False)[:300]
+        else:
+            resp_summary = entry.get("response_summary", response)
+            resp_short = resp_summary[:300] + "..." if len(resp_summary) > 300 else resp_summary
+        return f"- [{time_str}] ({model}) Q: {query}\n  A: {resp_short}\n"
+
+    @staticmethod
     def _extract_recent_conversations(log_path: str, max_chars: int = 8192) -> str:
         """
         解析 conversation_log.json，按日期从新到旧提取对话记录。
@@ -1787,18 +1742,7 @@ class AgentMain:
                 date_block = f"## {date}\n"
                 for entry in entries:
                     # 每条记录取关键字段，控制体积
-                    query = entry.get("query", "")
-                    response = entry.get("response", "")
-                    facts = entry.get("facts", {})
-                    model = entry.get("model", "")
-                    time_str = entry.get("time", "")
-                    # 优先使用结构化 facts，其次使用 response_summary，兜底 response
-                    if facts:
-                        resp_short = json.dumps(facts, ensure_ascii=False)[:300]
-                    else:
-                        resp_summary = entry.get("response_summary", response)
-                        resp_short = resp_summary[:300] + "..." if len(resp_summary) > 300 else resp_summary
-                    line = f"- [{time_str}] ({model}) Q: {query}\n  A: {resp_short}\n"
+                    line = AgentMain._format_log_entry(entry)
                     # 单条超出剩余预算则跳过该日期后续条目
                     if total_len + len(date_block) + len(line) > max_chars and parts:
                         break
@@ -1857,17 +1801,7 @@ class AgentMain:
                 entries = data[date][:max_entries_per_date]
                 date_block = f"## {date}\n"
                 for entry in entries:
-                    query = entry.get("query", "")
-                    response = entry.get("response", "")
-                    facts = entry.get("facts", {})
-                    model = entry.get("model", "")
-                    time_str = entry.get("time", "")
-                    if facts:
-                        resp_short = json.dumps(facts, ensure_ascii=False)[:300]
-                    else:
-                        resp_summary = entry.get("response_summary", response)
-                        resp_short = resp_summary[:300] + "..." if len(resp_summary) > 300 else resp_summary
-                    date_block += f"- [{time_str}] ({model}) Q: {query}\n  A: {resp_short}\n"
+                    date_block += self._format_log_entry(entry)
 
                 if total_len + len(date_block) > max_chars:
                     break
@@ -1926,7 +1860,6 @@ class AgentMain:
                             f"---\n{user_md_content}\n---"
                         )
                 elif task_id == "daily_summary":
-                    summary_path = os.path.join(self._PROJECT_ROOT, "initspace", "memorys", "memory_summary.md")
                     summary_content = self._read_file_tail(summary_path, max_chars=8192)
                     if summary_content:
                         prompt_parts.append(
@@ -2033,29 +1966,3 @@ class AgentMain:
         if self._heartbeat_thread and self._heartbeat_thread.is_alive():
             self._heartbeat_thread.join(timeout=5)
             logger.info("[Heartbeat] 心跳线程已关闭")
-
-
-
-# ==============================================================================
-# 主程序
-# ==============================================================================
-
-if __name__ == '__main__':
-
-    print("=" * 60)
-    print("Agent — 多模型智能体 + Skill")
-    print("输入 /help 查看可用命令")
-    print("=" * 60)
-
-    model_name = "glm"
-
-    agent = AgentMain(model_name=model_name)
-    from buddyMe.tool_moudle.baidu_search_tool import BaiduSearchTool
-    agent.register_tool(BaiduSearchTool())
-    agent.start_heartbeat()
-
-    while True:
-        inp = input("query: ")
-        reply = agent.invoke(inp)
-        if reply:
-            print(reply)

@@ -4,7 +4,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -100,21 +100,6 @@ class BaseToolExecutor(ABC):
         """
         self._tools[tool.name] = tool
 
-    def unregister(self, tool_name: str) -> bool:
-        """注销工具"""
-        if tool_name in self._tools:
-            del self._tools[tool_name]
-            return True
-        return False
-
-    def get_tool(self, tool_name: str) -> Optional[BaseTool]:
-        """获取工具实例"""
-        return self._tools.get(tool_name)
-
-    def list_tools(self) -> List[str]:
-        """列出已注册的工具名称"""
-        return list(self._tools.keys())
-
     def get_all_schemas(self) -> List[Dict[str, Any]]:
         """获取所有工具的 schema 列表"""
         return [tool.get_schema() for tool in self._tools.values()]
@@ -134,6 +119,3 @@ class ToolExecutor(BaseToolExecutor):
             return f"参数错误: {e}"
         except Exception as e:
             return f"执行失败: {e}"
-
-# 为了兼容旧代码，也导出 StandardToolExecutor
-StandardToolExecutor = ToolExecutor

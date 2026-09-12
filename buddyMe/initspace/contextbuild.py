@@ -25,14 +25,11 @@ contextbuild.py - 动态 System Prompt 构建器
 ================================================================================
 """
 
-import logging
 import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from buddyMe.initspace.utils import _load_md
-
-logger = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -169,8 +166,6 @@ def _build_tool_section(tool_schemas: List[Dict]) -> str:
 def build_system_prompt(
     tool_schemas: List[Dict],
     brain_dir: Optional[str] = None,
-    soul_path: Optional[str] = None,
-    platform: Optional[str] = None,
     skill_metadata: Optional[str] = None,
 ) -> str:
     """
@@ -184,8 +179,6 @@ def build_system_prompt(
     Args:
         tool_schemas: 已注册工具的 schema 列表（来自 ToolExecutor.get_all_schemas()）
         brain_dir: brain 目录路径（包含 SOUL/IDENTITY/AGENT 三个 .md 文件）
-        soul_path: SOUL.md 单文件路径（向后兼容，优先级低于 brain_dir）
-        platform: 操作系统平台（如 'win32', 'linux'）
         skill_metadata: Skill Level 1 元数据摘要字符串（由 SkillLoader.get_metadata_prompt() 生成）
 
     Returns:
@@ -193,26 +186,16 @@ def build_system_prompt(
     """
     sections: List[str] = []
 
-    # --- 1. 环境信息 ---
-    if platform:
-        sections.append(f"【环境信息】\n系统平台: {platform}")
-
-
-    # --- 2. 分层人格文件（SOUL → IDENTITY → Agent）---
+    # --- 1. 分层人格文件（SOUL → IDENTITY → Agent）---
     if brain_dir:
         brain_contents = _load_brain_files(brain_dir)
         sections.extend(brain_contents)
-    elif soul_path:
-        # 向后兼容：只传了 soul_path 的情况
-        soul = _load_md(soul_path)
-        if soul:
-            sections.append(soul)
 
-    # --- 3. Skill 元数据（在工具之前注入，优先引导 LLM 使用技能）---
+    # --- 2. Skill 元数据（在工具之前注入，优先引导 LLM 使用技能）---
     if skill_metadata:
         sections.append(skill_metadata)
 
-    # --- 4. 工具能力与调用指南 ---
+    # --- 3. 工具能力与调用指南 ---
     tool_section = _build_tool_section(tool_schemas)
     if tool_section:
         sections.append(tool_section)

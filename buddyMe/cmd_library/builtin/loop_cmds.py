@@ -24,7 +24,7 @@ import random
 import string
 import threading
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Optional
 
 from ..base import CommandContext, CommandResult, CommandMeta
 from ..registry import CommandRegistry
@@ -101,22 +101,22 @@ def parse_interval(text: str) -> Optional[int]:
 # ID 生成
 # ============================================================
 
-def _generate_task_id(description: str) -> str:
+def _generate_task_id(description: str, prefix: str = "loop") -> str:
     """根据任务描述生成可读的任务 ID。
 
-    规则: loop_ + 中文前2字(或英文前2词) + 4位随机字符
+    规则: <prefix>_ + 中文前2字(或英文前2词) + 4位随机字符
     """
     # 提取中文字符
     chinese_chars = re.findall(r"[一-鿿]", description)
     if len(chinese_chars) >= 2:
-        prefix = "".join(chinese_chars[:2])
+        stem = "".join(chinese_chars[:2])
     else:
         # 英文：取前两个单词
         words = re.findall(r"[a-zA-Z]+", description)
-        prefix = "_".join(words[:2]).lower() if words else "task"
+        stem = "_".join(words[:2]).lower() if words else "task"
 
     suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
-    return f"loop_{prefix}_{suffix}"
+    return f"{prefix}_{stem}_{suffix}"
 
 
 # ============================================================
@@ -185,7 +185,7 @@ def _loop_usage() -> CommandResult:
     )
 
 
-def _loop_history(ctx: CommandContext, task_id: str) -> CommandResult:
+def _loop_history(ctx: CommandContext, task_id: str, empty_note: str = "任务还没执行过") -> CommandResult:
     """查看某任务的运行历史（最近 20 条：状态 + 耗时；0.2.0 新增）。"""
     hb = ctx.agent.heartbeat
     data = hb._load_config()
@@ -196,7 +196,7 @@ def _loop_history(ctx: CommandContext, task_id: str) -> CommandResult:
     hist = task.get("history") or []
     lines = [f"运行历史（{task_id}，最近 {len(hist)} 条）:", "-" * 46]
     if not hist:
-        lines.append("  （暂无记录——任务还没执行过）")
+        lines.append(f"  （暂无记录——{empty_note}）")
     else:
         status_icon = {"ok": "✓", "timeout": "⏱", "error": "✗"}
         for h in reversed(hist):   # 最新在前
@@ -368,19 +368,17 @@ def _loop_list(ctx: CommandContext) -> CommandResult:
     else:
         lines.append(f"定时任务（共 {len(tasks)} 个）:")
         lines.append("-" * 60)
+        # 一次性读配置，构建 任务id → 间隔 的映射，避免循环内重复读文件
+        interval_map = {
+            t.get("id"): t.get("interval_minutes")
+            for t in hb._load_config().get("tasks", [])
+        }
         for task in tasks:
             enabled = task.get("enabled", True)
             task_id = task.get("id", "?")
             name = task.get("name", "未命名")
             last_run = task.get("last_run", "从未运行")
-
-            # 读取间隔
-            data = hb._load_config()
-            interval_min = None
-            for t in data.get("tasks", []):
-                if t.get("id") == task_id:
-                    interval_min = t.get("interval_minutes")
-                    break
+            interval_min = interval_map.get(task_id)
 
             icon = "+" if enabled else "-"
             interval_display = _format_interval(interval_min) if interval_min else "?"

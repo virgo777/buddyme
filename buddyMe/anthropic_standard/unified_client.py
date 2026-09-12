@@ -100,11 +100,6 @@ class UnifiedLLMClient(BaseLLMClient):
     def close(self):
         self._delegate.close()
 
-    def build_tool_result_message(
-        self, tool_call_id: str, tool_name: str, result
-    ) -> Dict[str, Any]:
-        return self._delegate.build_tool_result_message(tool_call_id, tool_name, result)
-
 
 # ———————————————————— 测试 ————————————————————
 if __name__ == "__main__":

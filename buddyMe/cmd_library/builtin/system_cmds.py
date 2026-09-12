@@ -8,7 +8,6 @@ cmd_library/builtin/system_cmds.py — 系统命令
 
 from __future__ import annotations
 
-import sys
 
 from ..base import CommandContext, CommandResult, CommandMeta
 from ..registry import CommandRegistry

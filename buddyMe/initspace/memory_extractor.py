@@ -53,7 +53,6 @@ class MemoryExtractor:
             conversation_log_path: conversation_log.json 文件路径
             client: 外部注入的 LLM 客户端（可选，优先于 model_name 创建的客户端）
         """
-        self.model_name: str = model_name
         self.md_path: str = md_path
         self.sections: List[str] = self._parse_sections(md_path)
         self.conversation_log_path: str = conversation_log_path

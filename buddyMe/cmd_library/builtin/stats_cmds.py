@@ -11,10 +11,10 @@ cmd_library/builtin/stats_cmds.py — 会话统计 + 每日定时命令（0.2.0 
 from __future__ import annotations
 
 import re
-from datetime import datetime
 
 from ..base import CommandContext, CommandResult, CommandMeta
 from ..registry import CommandRegistry
+from .loop_cmds import _generate_task_id, _loop_history
 
 
 def register_stats_commands(registry: CommandRegistry) -> None:
@@ -133,7 +133,7 @@ def cmd_cron(ctx: CommandContext) -> CommandResult:
     if not description:
         return CommandResult(success=False, message="任务描述不能为空")
 
-    task_id = _generate_cron_id(description)
+    task_id = _generate_task_id(description, prefix="cron")
     task = {
         "id": task_id,
         "name": description[:50],
@@ -177,20 +177,6 @@ def _cron_usage() -> CommandResult:
     )
 
 
-def _generate_cron_id(description: str) -> str:
-    """可读 ID：cron_ + 中文前 2 字（或英文前 2 词）+ 4 位随机串。"""
-    import random
-    import string
-    chinese = re.findall(r"[一-鿿]", description)
-    if len(chinese) >= 2:
-        prefix = "".join(chinese[:2])
-    else:
-        words = re.findall(r"[a-zA-Z]+", description)
-        prefix = "_".join(words[:2]).lower() if words else "task"
-    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
-    return f"cron_{prefix}_{suffix}"
-
-
 def _cron_list(ctx: CommandContext) -> CommandResult:
     """列出每日定时任务（只显示 schedule 模式的任务）。"""
     hb = ctx.agent.heartbeat
@@ -230,23 +216,5 @@ def _cron_remove(ctx: CommandContext, task_id: str) -> CommandResult:
 
 
 def _cron_history(ctx: CommandContext, task_id: str) -> CommandResult:
-    """查看某任务的运行历史（最近 20 条：状态 + 耗时）。"""
-    hb = ctx.agent.heartbeat
-    data = hb._load_config()
-    task = next((t for t in data.get("tasks", []) if t.get("id") == task_id), None)
-    if not task:
-        return CommandResult(success=False, message=f"任务 '{task_id}' 不存在")
-
-    hist = task.get("history") or []
-    lines = [f"运行历史（{task_id}，最近 {len(hist)} 条）:", "-" * 46]
-    if not hist:
-        lines.append("  （暂无记录——任务还没到点执行过）")
-    else:
-        status_icon = {"ok": "✓", "timeout": "⏱", "error": "✗"}
-        for h in reversed(hist):   # 最新在前
-            icon = status_icon.get(h.get("status"), "?")
-            lines.append(
-                f"  {icon} {h.get('time', '?')}  {h.get('status', '?'):<8} "
-                f"{h.get('duration_s', 0)}s"
-            )
-    return CommandResult(message="\n".join(lines))
+    """查看某每日任务的运行历史（最近 20 条：状态 + 耗时）。"""
+    return _loop_history(ctx, task_id, empty_note="任务还没到点执行过")

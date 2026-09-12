@@ -14,8 +14,6 @@ basic_llm.py — 统一大模型调用模块
     client.close()
 """
 
-from typing import Optional
-
 from buddyMe.anthropic_standard.unified_client import UnifiedLLMClient
 from buddyMe.llm_moudle import model_config
 

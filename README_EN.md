@@ -289,6 +289,16 @@ All `/` commands are processed locally and consume no tokens.
 | `project-guidelines-example` | Project guidelines template |
 | `configure-ecc` | ECC configuration |
 
+## Official Site Skills
+
+Three BuddyMe site-service skills under `skills/`, each with its own standalone repo:
+
+| Skill | Purpose | Standalone repo |
+|-------|---------|-----------------|
+| `buddyme-genimg` | Free image generation (GPT-Image-2.5, three quality tiers) | [virgo777/buddyme-genimg](https://github.com/virgo777/buddyme-genimg) |
+| `buddyme-search-content` | Content aggregation (multi-source full text, dual-confirmation) | [virgo777/buddyme-search-content](https://github.com/virgo777/buddyme-search-content) |
+| `buddyme-search-list` | List search (multi-engine aggregated results) | [virgo777/buddyme-search-list](https://github.com/virgo777/buddyme-search-list) |
+
 ## Architecture Overview
 
 ```
