@@ -10,7 +10,9 @@
 
 支持多模型热切换 · 工具调用 · 技能系统 · 持久记忆 · 定时任务
 
-[Blog](http://49.235.53.176/) · [GitHub](https://github.com/virgo777/buddyme)
+[Blog](https://www.buddyme.cn/) · [GitHub](https://github.com/virgo777/buddyme)
+
+**🚀 桌面客户端 v1.0.29 已发布** —— [立即下载](https://www.buddyme.cn/download/) · 每日免费 **4500 万 Token** / **1500 次**免费调用
 
 </div>
 
@@ -49,15 +51,16 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 | **每日定点任务** | `/cron <HH:MM> <任务>` | `09:00` 这样的每日定点触发（±5 分钟容差），与 `/loop` 的间隔循环互补——「每 30 分钟」用 loop，「每天早上 9 点」用 cron |
 | **运行历史** | `/loop --history <id>` · `/cron --history <id>` | 心跳任务每次执行记录状态（成功 ✓ / 超时 ⏱ / 失败 ✗）与耗时，保留最近 20 条——后台任务跑得怎么样，一眼可查 |
 
-## 🚀 博客说明
-<div style="background-color: #f8f9fa; padding: 18px 22px; border-radius: 8px; margin: 28px 0; border-left: 4px solid #e67e22;">
-  <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="http://49.235.53.176/" style="color: #2563eb; text-decoration: none;">BuddyMe Blog</a> 阅读最新文章与技术分享。</p>
-  <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 更新推荐阅读</p>
+## 🚀 博客与最新动态
+<div style="background-color: #f8f9fa; padding: 18px 22px; border-radius: 8px; margin: 28px 0;">
+  <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="https://www.buddyme.cn/" style="color: #2563eb;">BuddyMe 官方博客</a>，深入探讨智能体架构、设计模式与实战经验。</p>
+  <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 最新文章</p>
   <ul style="margin: 0; padding-left: 22px; line-height: 1.9;">
-    <li><a href="https://www.buddyme.cn/blog/plan-model-five-tier-planning" style="color: #2563eb; text-decoration: none;">Plan 模型五档体系：把 AI 的发挥度做成显式旋钮</a></li>
-    <li><a href="http://49.235.53.176/blog/heartbeat-and-loop-skill-engine-deep-dive" style="color: #2563eb; text-decoration: none;">buddyMe 心跳系统与 Loop 引擎：让 AI 自己干活，还不花钱</a></li>
-    <li><a href="http://49.235.53.176/blog/buddyme" style="color: #2563eb; text-decoration: none;">技术深度：buddyMe 框架任务拆解的 "盲拆" 问题与技能感知优化方案</a></li>
-    <li><a href="http://49.235.53.176/blog/react-plan-and-execute-reflection" style="color: #2563eb; text-decoration: none;">ReAct、Plan-and-Execute 与 Reflection 的本质差异与落地指南</a></li>
+    <li><a href="https://www.buddyme.cn/blog/plan-model-five-tier-planning" style="color: #2563eb; text-decoration: none;">Plan 模型五档体系：把 AI 的发挥度做成显式旋钮</a>（2026-09-09）</li>
+    <li><a href="https://www.buddyme.cn/blog/dynamic-skill-injection-architecture" style="color: #2563eb; text-decoration: none;">动态注入 Skill：从 Tool 动态注册到 Skill 按需注入的工业级架构实践</a>（2026-07-13）</li>
+    <li><a href="https://www.buddyme.cn/blog/buddyme-4-phase-kanban-pipeline" style="color: #2563eb; text-decoration: none;">A 4-Phase Kanban Pipeline Architecture for Multi-Agent Collaborative AI Task Processing</a>（2026-05-24）</li>
+    <li><a href="https://www.buddyme.cn/blog/agent-closed-loop-evolution" style="color: #2563eb; text-decoration: none;">给 AI Agent 装上"裁判眼"5：从评判到进化——多范式协同构建自我改进闭环</a>（2026-05-16）</li>
+    <li><a href="https://www.buddyme.cn/blog/agent-discussion-over-judgment" style="color: #2563eb; text-decoration: none;">给 AI Agent 装上"裁判眼"4：讨论大于判断——对抗式评估如何让 AI 自己纠错</a>（2026-05-15）</li>
   </ul>
 </div>
 
@@ -87,7 +90,17 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 
 ## 安装
 
-### 环境要求
+### 方式一：桌面客户端（推荐，开箱即用）
+
+**[⬇ 下载 BuddyMe 桌面客户端 v1.0.29](https://www.buddyme.cn/download/)**
+
+- Windows 一键安装（内置全部依赖，无需配置 Python 环境）
+- 注册即享**每日免费 4500 万 Token / 1500 次调用**
+- 自动检查更新，覆盖安装数据全保留
+
+### 方式二：从源码安装
+
+#### 环境要求
 
 - Python >= 3.9
 - pip
