@@ -10,7 +10,9 @@ Runtime hot-swapping across 6 major LLM providers. Layered persona, three-tier s
 
 Multi-model hot-swap · Tool calling · Skill system · Persistent memory · Scheduled tasks
 
-[Blog](http://49.235.53.176/) · [GitHub](https://github.com/virgo777/buddyme)
+[Blog](https://www.buddyme.cn/) · [GitHub](https://github.com/virgo777/buddyme)
+
+**🚀 Desktop Client v1.0.29 Released** — [Download Now](https://www.buddyme.cn/download/) · Free daily quota: **45M Tokens** / **1,500 calls**
 
 </div>
 
