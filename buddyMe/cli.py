@@ -58,6 +58,7 @@ def main():
     console.print("buddyMe — 多模型智能体 + Skill", style="bold green")
     console.print(f"项目空间: {workspace_dir}", style="cyan")
     console.print(f"默认模型: {model_name}", style="dim")
+    console.print("官网 https://www.buddyme.cn · 桌面客户端 /download", style="dim")
     console.print("输入 /help 查看可用命令", style="dim")
     console.print("=" * 60, style="bold green")
 
