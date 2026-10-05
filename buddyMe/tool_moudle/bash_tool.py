@@ -31,6 +31,14 @@ from typing import List, Optional
 from buddyMe.anthropic_standard.basic_anthropic_tool import BaseTool
 
 
+def _safe_mtime(path: str) -> float:
+    """getmtime 容错：文件在列出与排序之间被并发删除时按 0（最旧）兜底"""
+    try:
+        return os.path.getmtime(path)
+    except OSError:
+        return 0.0
+
+
 # ==============================================================================
 # 工具定义
 # ==============================================================================
@@ -91,10 +99,18 @@ class BashTool(BaseTool):
             return "错误：命令不能为空"
 
         # 安全检查
-        dangerous_patterns = ["rm -rf /", "mkfs", ":(){ :|:& };:", "dd if=/dev/zero"]
+        dangerous_patterns = [
+            "rm -rf /", "mkfs", ":(){ :|:& };:", "dd if=/dev/zero",
+            "shutdown", "halt", "reboot",
+        ]
         for pattern in dangerous_patterns:
             if pattern in command:
                 return f"错误：检测到危险命令模式 '{pattern}'，拒绝执行"
+
+        # fork 炸弹变体（空白/引号混淆写法）按词法归一后匹配
+        normalized = re.sub(r"\s+", "", command)
+        if ":(){:|:&};:" in normalized or "fork_bomb" in normalized:
+            return "错误：检测到危险命令模式（fork 炸弹变体），拒绝执行"
 
         # Windows: PowerShell 命令自动追加非交互标志，防止挂起
         if os.name == "nt" and re.match(r"^\s*powershell\b", command, re.IGNORECASE):
@@ -133,7 +149,12 @@ class BashTool(BaseTool):
                 return "[命令执行完成，无输出]"
 
         except asyncio.TimeoutError:
-            proc.kill()
+            # 先取消等待任务再 kill：裸 kill 后 communicate() 协程可能仍在读管道，
+            # 抢占式抛 RuntimeError/ProcessLookupError 导致超时信息被吞掉
+            try:
+                proc.kill()
+            except ProcessLookupError:
+                pass  # 进程恰好已退出
             await proc.wait()
             return f"错误：命令执行超时（{timeout}秒）"
         except FileNotFoundError:
@@ -204,7 +225,13 @@ class ReadFileTool(BaseTool):
 
             file_size = abs_path.stat().st_size
 
-            all_lines = abs_path.read_text(encoding="utf-8").splitlines(keepends=True)
+            # 编码容错与 BashTool._decode_output 同口径：UTF-8 优先，失败回退 GBK，
+            # 再失败 replace（避免非 UTF-8 文件直接读取失败）
+            try:
+                raw_text = abs_path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                raw_text = BashTool._decode_output(abs_path.read_bytes())
+            all_lines = raw_text.splitlines(keepends=True)
 
             total_lines = len(all_lines)
 
@@ -476,8 +503,11 @@ class GrepTool(BaseTool):
             return f"未找到匹配项（搜索了 {files_searched} 个文件）"
 
         output_lines = [f"搜索了 {files_searched} 个文件，找到 {len(results)} 个匹配项：\n"]
+        is_dir = search_path.is_dir()
+        search_root = str(search_path)
         for filepath, lineno, line in results:
-            rel_path = os.path.relpath(filepath, str(search_path)) if search_path.is_dir() else filepath
+            # 每条结果只算一次 relpath（原实现对同一文件重复解析）
+            rel_path = os.path.relpath(filepath, search_root) if is_dir else filepath
             output_lines.append(f"{rel_path}:{lineno}: {line.rstrip()}")
 
         return "\n".join(output_lines)
@@ -564,25 +594,27 @@ class GlobTool(BaseTool):
         max_results = int(max_results) if max_results else max_results
         matches = glob_module.glob(full_pattern, recursive=True)
 
-        # 过滤掉隐藏文件和常见忽略目录中的文件
+        # 过滤掉隐藏文件和常见忽略目录中的文件；每个路径只算一次 relpath
+        # （原实现对每个 m 算 relpath、排序后截断又对同一批再算一遍）
         ignore_dirs = {'node_modules', '__pycache__', '.git', 'venv', '.venv', 'dist', 'build'}
-        filtered = [
-            m for m in matches
-            if not any(part.startswith('.') or part in ignore_dirs for part in os.path.relpath(m, str(search_path)).split(os.sep))
-            and os.path.isfile(m)
-        ]
+        search_root = str(search_path)
+        filtered = []
+        for m in matches:
+            if not os.path.isfile(m):
+                continue
+            rel = os.path.relpath(m, search_root)
+            if any(part.startswith('.') or part in ignore_dirs for part in rel.split(os.sep)):
+                continue
+            filtered.append((m, rel))
 
         if not filtered:
             return f"未找到匹配 '{pattern}' 的文件（搜索目录: {search_path}）"
 
-        # 按修改时间排序（最近的在前）
-        filtered.sort(key=lambda f: os.path.getmtime(f), reverse=True)
+        # 按修改时间排序（最近的在前）；getmtime 失败（并发删除竞态）按 0 兜底不炸
+        filtered.sort(key=lambda pair: _safe_mtime(pair[0]), reverse=True)
         filtered = filtered[:max_results]
 
-        # 转为相对路径
-        rel_paths = [os.path.relpath(f, str(search_path)) for f in filtered]
-
-        output_lines = [f"找到 {len(rel_paths)} 个匹配 '{pattern}' 的文件：\n"]
-        output_lines.extend(rel_paths)
+        output_lines = [f"找到 {len(filtered)} 个匹配 '{pattern}' 的文件：\n"]
+        output_lines.extend(rel for _, rel in filtered)
 
         return "\n".join(output_lines)
