@@ -12,7 +12,7 @@
 
 [Blog](https://www.buddyme.cn/) · [GitHub](https://github.com/virgo777/buddyme)
 
-**🚀 桌面客户端 v1.0.29 已发布** —— [立即下载](https://www.buddyme.cn/download/) · 每日免费 **4500 万 Token** / **1500 次**免费调用
+**🚀 桌面客户端 v1.0.50 已发布** —— [立即下载](https://www.buddyme.cn/download/) · 每日免费 **4500 万 Token** / **1000 次**免费调用（作图 100 点/张，统一额度）
 
 </div>
 
@@ -53,14 +53,15 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 
 ## 🚀 博客与最新动态
 <div style="background-color: #f8f9fa; padding: 18px 22px; border-radius: 8px; margin: 28px 0;">
-  <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="https://www.buddyme.cn/" style="color: #2563eb;">BuddyMe 官方博客</a>，深入探讨智能体架构、设计模式与实战经验。</p>
+  <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="https://www.buddyme.cn/" style="color: #2563eb;">BuddyMe 官方博客</a>，深入探讨智能体架构、设计模式与实战经验。BuddyMe 智能体工作台——多模型智能体 + Skill 技能系统，一个对话完成文档、表格、PPT、调研与生图。</p>
   <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 最新文章</p>
   <ul style="margin: 0; padding-left: 22px; line-height: 1.9;">
-    <li><a href="https://www.buddyme.cn/blog/plan-model-five-tier-planning" style="color: #2563eb; text-decoration: none;">Plan 模型五档体系：把 AI 的发挥度做成显式旋钮</a>（2026-09-09）</li>
-    <li><a href="https://www.buddyme.cn/blog/dynamic-skill-injection-architecture" style="color: #2563eb; text-decoration: none;">动态注入 Skill：从 Tool 动态注册到 Skill 按需注入的工业级架构实践</a>（2026-07-13）</li>
-    <li><a href="https://www.buddyme.cn/blog/buddyme-4-phase-kanban-pipeline" style="color: #2563eb; text-decoration: none;">A 4-Phase Kanban Pipeline Architecture for Multi-Agent Collaborative AI Task Processing</a>（2026-05-24）</li>
-    <li><a href="https://www.buddyme.cn/blog/agent-closed-loop-evolution" style="color: #2563eb; text-decoration: none;">给 AI Agent 装上"裁判眼"5：从评判到进化——多范式协同构建自我改进闭环</a>（2026-05-16）</li>
-    <li><a href="https://www.buddyme.cn/blog/agent-discussion-over-judgment" style="color: #2563eb; text-decoration: none;">给 AI Agent 装上"裁判眼"4：讨论大于判断——对抗式评估如何让 AI 自己纠错</a>（2026-05-15）</li>
+    <li><a href="https://www.buddyme.cn/blog/agents-are-systems-1009" style="color: #2563eb; text-decoration: none;">你的智能体跑分有 54% 是噪声：该把「智能体」当系统评测了</a>（2026-10-09）</li>
+    <li><a href="https://www.buddyme.cn/blog/videoevolve-harness-evolution-1009" style="color: #2563eb; text-decoration: none;">别再手动调 Harness 了：让框架自己进化自己</a>（2026-10-09）</li>
+    <li><a href="https://www.buddyme.cn/blog/sphere-spatial-preference-1008" style="color: #2563eb; text-decoration: none;">VR 房间摆了几百次还是不对？让 AI 记住你挪过的每一件家具</a>（2026-10-08）</li>
+    <li><a href="https://www.buddyme.cn/blog/bda-council-calibration-1008" style="color: #2563eb; text-decoration: none;">议会里有个内鬼怎么办：把「谁可靠」变成一道数学题</a>（2026-10-08）</li>
+    <li><a href="https://www.buddyme.cn/blog/process-drift-eval-1007" style="color: #2563eb; text-decoration: none;">技能升级的隐形陷阱：92.6% 的「通过」样本里藏着过程违规</a>（2026-10-07）</li>
+    <li><a href="https://www.buddyme.cn/blog" style="color: #e67e22; text-decoration: none;">👉 更多文章请访问 BuddyMe 官方博客</a></li>
   </ul>
 </div>
 
@@ -92,10 +93,10 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
 
 ### 方式一：桌面客户端（推荐，开箱即用）
 
-**[⬇ 下载 BuddyMe 桌面客户端 v1.0.29](https://www.buddyme.cn/download/)**
+**[⬇ 下载 BuddyMe 桌面客户端 v1.0.50](https://www.buddyme.cn/download/)**
 
 - Windows 一键安装（内置全部依赖，无需配置 Python 环境）
-- 注册即享**每日免费 4500 万 Token / 1500 次调用**
+- 注册即享**每日免费 4500 万 Token / 1000 次调用**（作图 100 点/张，统一额度）
 - 自动检查更新，覆盖安装数据全保留
 
 ### 方式二：从源码安装
