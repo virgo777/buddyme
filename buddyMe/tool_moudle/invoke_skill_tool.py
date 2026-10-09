@@ -75,9 +75,16 @@ class InvokeSkillTool(BaseTool):
         logger.info("[Skill] >>> 激活技能: %s", skill_name)
         logger.info("[Skill] >>> 用户问题: %s", user_query)
 
+        # 容错：LLM 可能带空格或大小写不一致地引用技能名
+        skill_name = (skill_name or "").strip()
+        if not skill_name:
+            return "错误：技能名称不能为空"
+
         instructions = self._loader.load_instructions(skill_name)
 
-        # 首次未命中：重新扫描 skill 目录，可能运行中新增了技能
+        # 首次未命中：尝试小写形式（技能名统一小写注册），再重扫目录兜底
+        if not instructions and skill_name != skill_name.lower():
+            instructions = self._loader.load_instructions(skill_name.lower())
         if not instructions:
             logger.info("[Skill] >>> 未命中，重新扫描 skill 目录...")
             self._loader.reload()

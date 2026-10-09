@@ -72,12 +72,15 @@ class BaiduSearchTool(BaseTool):
         Returns:
             搜索结果字符串
         """
+        if not query or not query.strip():
+            return "错误：搜索关键词不能为空"
+
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json"
         }
         payload = {
-            "messages": [{"role": "user", "content": query}],
+            "messages": [{"role": "user", "content": query.strip()}],
             "search_source": "baidu_search_v2",
             "resource_type_filter": [{"type": "web", "top_k": 10}]
         }
