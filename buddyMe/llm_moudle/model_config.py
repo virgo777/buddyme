@@ -6,7 +6,7 @@ import os
 
 
 class ModelConfig:
-    """大模型配置管理工具类（支持智谱GLM、deepseek、百度千帆ERNIE）"""
+    """大模型配置管理工具类（支持智谱GLM、deepseek、百度千帆ERNIE、MiniMax 等）"""
 
     _CONFIG = {
         "sub_agent_code_plan": {
@@ -56,6 +56,24 @@ class ModelConfig:
             "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
             "api_model": "qwen3.6-plus",
             "max_tokens": 65536
+        },
+        "minimax": {
+            "api_key": os.environ.get("MINIMAX_API_KEY", ""),
+            "base_url": "https://api.minimax.io/v1/chat/completions",
+            "api_model": "MiniMax-M2.7",
+            "max_tokens": 192000
+        },
+        "minimax_highspeed": {
+            "api_key": os.environ.get("MINIMAX_API_KEY", ""),
+            "base_url": "https://api.minimax.io/v1/chat/completions",
+            "api_model": "MiniMax-M2.7-highspeed",
+            "max_tokens": 192000
+        },
+        "minimax_code_plan": {
+            "api_key": os.environ.get("MINIMAX_API_KEY", ""),
+            "base_url": "https://api.minimax.io/anthropic",
+            "api_model": "MiniMax-M2.7",
+            "max_tokens": 192000
         }
     }
 
