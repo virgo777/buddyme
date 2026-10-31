@@ -45,7 +45,6 @@ def _safe_mtime(path: str) -> float:
 
 
 
-
 class BashTool(BaseTool):
     """Bash 命令执行工具"""
 

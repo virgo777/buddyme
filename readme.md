@@ -56,11 +56,11 @@ buddyMe 是一个 Python 实现的多模型 AI 智能体框架。它能够将复
   <p style="margin: 0 0 14px 0; line-height: 1.6;">欢迎访问 <a href="https://www.buddyme.cn/" style="color: #2563eb;">BuddyMe 官方博客</a>，深入探讨智能体架构、设计模式与实战经验。BuddyMe 智能体工作台——多模型智能体 + Skill 技能系统，一个对话完成文档、表格、PPT、调研与生图。</p>
   <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 最新文章</p>
   <ul style="margin: 0; padding-left: 22px; line-height: 1.9;">
-    <li><a href="https://www.buddyme.cn/blog/agents-are-systems-1009" style="color: #2563eb; text-decoration: none;">你的智能体跑分有 54% 是噪声：该把「智能体」当系统评测了</a>（2026-10-09）</li>
-    <li><a href="https://www.buddyme.cn/blog/videoevolve-harness-evolution-1009" style="color: #2563eb; text-decoration: none;">别再手动调 Harness 了：让框架自己进化自己</a>（2026-10-09）</li>
-    <li><a href="https://www.buddyme.cn/blog/sphere-spatial-preference-1008" style="color: #2563eb; text-decoration: none;">VR 房间摆了几百次还是不对？让 AI 记住你挪过的每一件家具</a>（2026-10-08）</li>
-    <li><a href="https://www.buddyme.cn/blog/bda-council-calibration-1008" style="color: #2563eb; text-decoration: none;">议会里有个内鬼怎么办：把「谁可靠」变成一道数学题</a>（2026-10-08）</li>
-    <li><a href="https://www.buddyme.cn/blog/process-drift-eval-1007" style="color: #2563eb; text-decoration: none;">技能升级的隐形陷阱：92.6% 的「通过」样本里藏着过程违规</a>（2026-10-07）</li>
+    <li><a href="https://www.buddyme.cn/blog/one-sentence-workday-agent-1031" style="color: #2563eb; text-decoration: none;">一句话真的能干完一天活吗？测了几百个 AI 任务后，我把真相拆给你看</a>（2026-10-31）</li>
+    <li><a href="https://www.buddyme.cn/blog/billion-token-quota-1030" style="color: #2563eb; text-decoration: none;">一天一亿 Token 的额度砸下来，为什么大多数人还是用不出成果？</a>（2026-10-30）</li>
+    <li><a href="https://www.buddyme.cn/blog/ai-image-shrimp-audit-1030" style="color: #2563eb; text-decoration: none;">AI 配图出现双头虾被下架：AI 生成的内容，谁来负最后审核责任？</a>（2026-10-30）</li>
+    <li><a href="https://www.buddyme.cn/blog/ai-lottery-audit-1029" style="color: #2563eb; text-decoration: none;">借 AI 中了 500 万之后：下一次它给出错误答案时，谁来把关？</a>（2026-10-29）</li>
+    <li><a href="https://www.buddyme.cn/blog/buddyme-agent-team-checkup-1027" style="color: #2563eb; text-decoration: none;">进博会都在用 AI 了，你的智能体团队体检过吗？</a>（2026-10-27）</li>
     <li><a href="https://www.buddyme.cn/blog" style="color: #e67e22; text-decoration: none;">👉 更多文章请访问 BuddyMe 官方博客</a></li>
   </ul>
 </div>

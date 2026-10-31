@@ -345,7 +345,7 @@ class OpenAICompatibleClient(BaseLLMClient):
 
         logger.error(f"[{self.model_name}] 已重试{max_retries}次，全部失败，无模型可回退")
         raise last_error
-            
+
     def _prepare_payload(
         self,
         payload: Dict[str, Any],

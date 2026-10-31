@@ -62,12 +62,14 @@ Upgrade: `pip install --upgrade .`, then start with `buddyme` and type `/help` t
 </details>
 
 <div style="background-color: #f8f9fa; padding: 18px 22px; border-radius: 8px; margin: 28px 0; border-left: 4px solid #e67e22;">
-  <p style="margin: 0 0 14px 0; line-height: 1.6;">Visit the <a href="http://49.235.53.176/" style="color: #2563eb; text-decoration: none;">BuddyMe Blog</a> for the latest articles and technical deep-dives.</p>
-  <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 Recommended reading</p>
+  <p style="margin: 0 0 14px 0; line-height: 1.6;">Visit the <a href="https://www.buddyme.cn/" style="color: #2563eb; text-decoration: none;">BuddyMe Blog</a> for the latest articles and technical deep-dives.</p>
+  <p style="color: #e67e22; font-size: 1.1em; font-weight: bold; margin: 0 0 12px 0;">📚 Latest articles</p>
   <ul style="margin: 0; padding-left: 22px; line-height: 1.9;">
-    <li><a href="http://49.235.53.176/blog/heartbeat-and-loop-skill-engine-deep-dive" style="color: #2563eb; text-decoration: none;">buddyMe Heartbeat System & Loop Engine: Let AI work on its own — for free</a></li>
-    <li><a href="http://49.235.53.176/blog/buddyme" style="color: #2563eb; text-decoration: none;">Deep dive: the "blind decomposition" problem in task planning and skill-aware optimization</a></li>
-    <li><a href="http://49.235.53.176/blog/react-plan-and-execute-reflection" style="color: #2563eb; text-decoration: none;">ReAct vs. Plan-and-Execute vs. Reflection: essential differences and practical guidance</a></li>
+    <li><a href="https://www.buddyme.cn/blog/one-sentence-workday-agent-1031" style="color: #2563eb; text-decoration: none;">Can one prompt really finish a whole day's work? After testing hundreds of AI tasks, here's the truth</a>（2026-10-31）</li>
+    <li><a href="https://www.buddyme.cn/blog/billion-token-quota-1030" style="color: #2563eb; text-decoration: none;">A hundred million tokens a day — why do most people still get nothing done?</a>（2026-10-30）</li>
+    <li><a href="https://www.buddyme.cn/blog/ai-image-shrimp-audit-1030" style="color: #2563eb; text-decoration: none;">A two-headed shrimp got an AI illustration taken down: who signs off on AI-generated content?</a>（2026-10-30）</li>
+    <li><a href="https://www.buddyme.cn/blog/ai-lottery-audit-1029" style="color: #2563eb; text-decoration: none;">After winning the lottery with AI: who checks the next wrong answer?</a>（2026-10-29）</li>
+    <li><a href="https://www.buddyme.cn/blog/buddyme-agent-team-checkup-1027" style="color: #2563eb; text-decoration: none;">Your favorite expo is using AI — has your agent team had its checkup?</a>（2026-10-27）</li>
   </ul>
 </div>
 
